@@ -102,7 +102,16 @@ fi
 # ============================================
 
 # --- System Monitor (Conky) ---
-pgrep -x conky > /dev/null || conky &
+CONKY_CFG="$HOME/.config/conky/conky-center.conf"
+if [ -f "$CONKY_CFG" ]; then
+    if grep -q "vnstat" "$CONKY_CFG" 2>/dev/null && ! command -v vnstat >/dev/null 2>&1; then
+        echo "Skipping conky: vnstat not found"
+    else
+        pgrep -x conky > /dev/null || conky &
+    fi
+else
+    pgrep -x conky > /dev/null || conky &
+fi
 
 # --- Music Player Daemon ---
 if command -v mpd > /dev/null 2>&1; then

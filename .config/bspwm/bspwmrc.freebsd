@@ -107,8 +107,10 @@ pgrep -x sxhkd > /dev/null || sxhkd &
 # Note: Use --backend glx or --backend xrender on FreeBSD if experimental backends fail
 pgrep -x picom > /dev/null || picom &
 
-# Start notification daemon
-pgrep -x dunst > /dev/null || dunst &
+# Start notification daemon (only if installed)
+if command -v dunst >/dev/null 2>&1; then
+    pgrep -x dunst > /dev/null || dunst &
+fi
 
 # Replace caps lock with backspace
 setxkbmap -option caps:backspace
