@@ -45,6 +45,10 @@ INSTALL_AUDIO=true    # PipeWire and audio config
 # Preserve existing user configurations by default (do not overwrite)
 PRESERVE_EXISTING=true
 
+# Optional utilities (install when requested)
+INSTALL_OPTIONAL=false
+OPTIONAL_PACKAGES="vnstat dunst polkit-gnome libudisks ympd"
+
 # Interactive selection mode
 INTERACTIVE_SELECTION=false
 
@@ -78,6 +82,12 @@ for arg in "$@"; do
         --no-preserve)
             PRESERVE_EXISTING=false
             ;;
+        --install-optional)
+            INSTALL_OPTIONAL=true
+            ;;
+        --no-optional)
+            INSTALL_OPTIONAL=false
+            ;;
         --select)
             INTERACTIVE_SELECTION=true
             ;;
@@ -95,11 +105,13 @@ for arg in "$@"; do
             echo "  --no-nvim          Skip NeoVim config installation"
             echo "  --no-zsh           Skip ZSH config and plugin installation"
             echo "  --no-audio         Skip audio (PipeWire) configuration and packages"
+            echo "  --install-optional Install additional optional utilities (vnstat, dunst, polkit-gnome, libudisks, ympd)"
+            echo "  --no-optional      Do not install optional utilities"
             echo "  --no-preserve      Do not preserve existing configs; allow overwriting targets"
             echo "  --select           Interactively select which components to install"
             echo "  -h, --help         Show this help message"
             echo ""
-            echo "Note: By default this installer will not install ZSH or NeoVim and will preserve existing configs. Use --select to enable components, or pass --no-preserve to allow overwriting."
+            echo "Note: By default this installer will not install ZSH or NeoVim and will preserve existing configs. Use --select to enable components, or pass --install-optional to include optional utilities."
             exit 0
             ;;
         *)
@@ -235,6 +247,7 @@ FONT_PACKAGES="
 terminus-font
 nerd-fonts
 font-awesome
+noto
 "
 
 # Display manager (optional)
@@ -380,6 +393,21 @@ install_packages() {
         fi
     done
 
+    # Optional utilities (user-requested)
+    if [ "$INSTALL_OPTIONAL" = true ]; then
+        log_info "Installing optional utilities..."
+        for pkg in $OPTIONAL_PACKAGES; do
+            if pkg info -e "$pkg" > /dev/null 2>&1; then
+                log_info "Package already installed: $pkg"
+            else
+                log_info "Installing optional: $pkg"
+                pkg install -y "$pkg" || log_warning "Failed to install optional package: $pkg"
+            fi
+        done
+    else
+        log_info "Skipping optional utilities (not requested)"
+    fi
+
     log_success "Package installation complete!"
 }
 
@@ -429,7 +457,14 @@ select_components() {
         *) INSTALL_AUDIO=true ;;
     esac
 
-    log_info "Selection: WM=$INSTALL_WM NVIM=$INSTALL_NVIM ZSH=$INSTALL_ZSH AUDIO=$INSTALL_AUDIO"
+    printf "Install optional utilities (vnstat, dunst, polkit-gnome, libudisks, ympd)? [y/N]: "
+    read -r res
+    case "$res" in
+        y|Y) INSTALL_OPTIONAL=true ;;
+        *) INSTALL_OPTIONAL=false ;;
+    esac
+
+    log_info "Selection: WM=$INSTALL_WM NVIM=$INSTALL_NVIM ZSH=$INSTALL_ZSH AUDIO=$INSTALL_AUDIO OPTIONAL=$INSTALL_OPTIONAL"
 }
 
 backup_configs() {
