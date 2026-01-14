@@ -1,0 +1,258 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index ab9ecd55..4563c560 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -27,6 +27,7 @@ set(MPD_SOURCES
+ 
+ set(NETWORK_SOURCES
+   ${src_dir}/adapters/net.cpp
++  ${src_dir}/adapters/net_bsd.cpp
+   ${src_dir}/modules/network.cpp
+   $<IF:$<BOOL:${WITH_LIBNL}>,${src_dir}/adapters/net_nl.cpp,${src_dir}/adapters/net_iw.cpp>
+   )
+diff --git a/src/adapters/net_bsd.cpp b/src/adapters/net_bsd.cpp
+new file mode 100644
+index 00000000..df790484
+--- /dev/null
++++ b/src/adapters/net_bsd.cpp
+@@ -0,0 +1,169 @@
++#if defined(__FreeBSD__)
++
++#include "adapters/net.hpp"
++
++#include <arpa/inet.h>
++#include <ifaddrs.h>
++#include <net/if.h>
++#include <net/if_dl.h>
++#include <netinet/in.h>
++#include <sys/types.h>
++
++#include <cstring>
++
++#include "common.hpp"
++#include "utils/file.hpp"
++#include "utils/string.hpp"
++
++POLYBAR_NS
++
++namespace net {
++  NetType iface_type(const std::string& ifname) {
++    // Quick heuristic: wireless interfaces often show "ssid:" in ifconfig output
++    try {
++      auto out = file_util::contents("/sbin/ifconfig " + ifname);
++      if (string_util::contains(out, "ssid:")) {
++        return NetType::WIRELESS;
++      }
++    } catch (...) {
++      // ignore
++    }
++
++    if (ifname.rfind("lo", 0) == 0) {
++      return NetType::OTHER;
++    }
++
++    return NetType::ETHERNET;
++  }
++
++  bool is_virtual(const std::string&) {
++    // FreeBSD has different sysfs semantics; treat as non-virtual for our purposes
++    return false;
++  }
++
++  std::pair<string, bool> get_canonical_interface(const string& ifname) {
++    int idx = if_nametoindex(ifname.c_str());
++
++    if (idx == 0) {
++      throw system_error("if_nameindex(" + ifname + ")");
++    }
++
++    char canonical[IF_NAMESIZE];
++    if (!if_indextoname(idx, canonical)) {
++      throw system_error("if_indextoname(" + to_string(idx) + ")");
++    }
++
++    string str{canonical};
++
++    return {str, str != ifname};
++  }
++
++  std::string find_interface(NetType type) {
++    struct ifaddrs* ifaddrs_ptr;
++    if (getifaddrs(&ifaddrs_ptr) == -1 || !ifaddrs_ptr) {
++      return "";
++    }
++
++    struct ifaddrs* candidate = nullptr;
++
++    for (struct ifaddrs* i = ifaddrs_ptr; i != nullptr; i = i->ifa_next) {
++      if (!i->ifa_name) continue;
++      const std::string name{i->ifa_name};
++      const NetType iftype = iface_type(name);
++      if (iftype != type) continue;
++      if (candidate == nullptr) {
++        candidate = i;
++      } else if (((candidate->ifa_flags & IFF_RUNNING) == 0) && ((i->ifa_flags & IFF_RUNNING) > 0)) {
++        candidate = i;
++      }
++    }
++
++    if (candidate) {
++      const std::string name{candidate->ifa_name};
++      freeifaddrs(ifaddrs_ptr);
++      return name;
++    }
++
++    freeifaddrs(ifaddrs_ptr);
++    return "";
++  }
++
++  std::string find_wireless_interface() {
++    return find_interface(NetType::WIRELESS);
++  }
++
++  std::string find_wired_interface() {
++    return find_interface(NetType::ETHERNET);
++  }
++
++  bool network::query(bool accumulate) {
++    m_status.previous = m_status.current;
++    m_status.current.transmitted = 0;
++    m_status.current.received = 0;
++    m_status.current.time = std::chrono::steady_clock::now();
++    m_status.ip = NO_IP;
++    m_status.ip6 = NO_IP;
++
++    struct ifaddrs* ifaddr;
++    if (getifaddrs(&ifaddr) == -1 || ifaddr == nullptr) {
++      return false;
++    }
++
++    m_status.mac = NO_MAC;
++
++    for (auto ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
++      if (ifa->ifa_addr == nullptr) continue;
++
++      if (m_interface.compare(0, m_interface.length(), ifa->ifa_name) != 0) {
++        if (!accumulate) continue;
++      }
++
++      switch (ifa->ifa_addr->sa_family) {
++        case AF_INET: {
++          char ip_buffer[NI_MAXHOST];
++          getnameinfo(ifa->ifa_addr, sizeof(sockaddr_in), ip_buffer, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
++          m_status.ip = string{ip_buffer};
++          break;
++        }
++        case AF_INET6: {
++          char ip6_buffer[INET6_ADDRSTRLEN];
++          auto sa6 = reinterpret_cast<sockaddr_in6*>(ifa->ifa_addr);
++          if (IN6_IS_ADDR_LINKLOCAL(&sa6->sin6_addr)) break;
++          if (IN6_IS_ADDR_SITELOCAL(&sa6->sin6_addr)) break;
++          if ((((unsigned char*)sa6->sin6_addr.s6_addr)[0] & 0xFE) == 0xFC) break;
++          if (inet_ntop(AF_INET6, &sa6->sin6_addr, ip6_buffer, INET6_ADDRSTRLEN) == 0) {
++            m_log.warn("inet_ntop() " + string(strerror(errno)));
++            break;
++          }
++          m_status.ip6 = string{ip6_buffer};
++          break;
++        }
++        case AF_LINK: {
++          auto sdl = reinterpret_cast<struct sockaddr_dl*>(ifa->ifa_addr);
++          if (sdl && sdl->sdl_alen > 0) {
++            unsigned char* mac = reinterpret_cast<unsigned char*>(LLADDR(sdl));
++            char macbuf[32];
++            snprintf(macbuf, sizeof(macbuf), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
++            m_status.mac = string{macbuf};
++          }
++
++          if (ifa->ifa_data != nullptr) {
++            struct if_data* id = reinterpret_cast<struct if_data*>(ifa->ifa_data);
++            m_status.current.transmitted += id->ifi_obytes;
++            m_status.current.received += id->ifi_ibytes;
++          }
++          break;
++        }
++      }
++    }
++
++    freeifaddrs(ifaddr);
++
++    return true;
++  }
++
++} // namespace net
++
++POLYBAR_NS_END
++
++#endif // __FreeBSD__
+diff --git a/src/modules/battery.cpp b/src/modules/battery.cpp
+index f1ba3b17..5222d269 100644
+--- a/src/modules/battery.cpp
++++ b/src/modules/battery.cpp
+@@ -31,6 +31,58 @@ namespace modules {
+     m_interval = m_conf.get<decltype(m_interval)>(name(), "poll-interval", 5s);
+     m_lastpoll = chrono::steady_clock::now();
+ 
++  #if defined(__FreeBSD__)
++    // FreeBSD: use acpiconf/apm fallback (no inotify/sysfs)
++    // State reader: parse output of acpiconf -i 0 or apm
++    m_state_reader = make_unique<state_reader>([] {
++      try {
++        auto out = file_util::contents("/sbin/acpiconf -i 0 2>/dev/null");
++        if (!out.empty()) {
++          if (string_util::icontains(out, "charging")) return true;
++          if (string_util::icontains(out, "discharging") || string_util::icontains(out, "discharg")) return false;
++        }
++        // fallback to apm
++        out = file_util::contents("/sbin/apm 2>/dev/null");
++        if (!out.empty() && out.find("on-line") != string::npos) return true;
++      } catch (...) {
++      }
++      return false;
++    });
++
++    // Capacity reader: parse remaining capacity from acpiconf or apm -l
++    m_capacity_reader = make_unique<capacity_reader>([] {
++      try {
++        auto out = file_util::contents("/sbin/acpiconf -i 0 2>/dev/null");
++        if (!out.empty()) {
++          // Look for "Remaining capacity: XX%" or similar
++          size_t pos = out.find("Remaining capacity");
++          if (pos != string::npos) {
++            auto rest = out.substr(pos);
++            for (auto& c : rest) if (!isdigit(c) && c != '%') c = ' ';
++            std::istringstream iss(rest);
++            int val;
++            while (iss >> val) {
++              if (val >= 0 && val <= 100) return val;
++            }
++          }
++        }
++        // fallback to apm -l
++        out = file_util::contents("/sbin/apm -l 2>/dev/null");
++        if (!out.empty()) {
++          // apm -l prints a single number
++          std::istringstream iss(out);
++          int val;
++          if (iss >> val) return val;
++        }
++      } catch (...) {
++      }
++      return 0;
++    });
++
++    // Rate/consumption best-effort defaults
++    m_rate_reader = make_unique<rate_reader>([] { return 0UL; });
++    m_consumption_reader = make_unique<consumption_reader>([] { return string("0.00"); });
++#else
+     auto path_adapter = string_util::replace(PATH_ADAPTER, "%adapter%", m_conf.get(name(), "adapter", "ADP1"s)) + "/";
+     auto path_battery = string_util::replace(PATH_BATTERY, "%battery%", m_conf.get(name(), "battery", "BAT0"s)) + "/";
+ 
+@@ -82,6 +134,7 @@ namespace modules {
+ 
+       return 0UL;
+     });
++#endif
+ 
+     // Make consumption reader
+     m_consumption_reader = make_unique<consumption_reader>([this] {
