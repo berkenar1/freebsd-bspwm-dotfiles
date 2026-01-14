@@ -1,7 +1,26 @@
 ![Banner](https://user-images.githubusercontent.com/55960554/129024339-894b9a1a-5717-4935-b894-ffa1191585e0.png)
 ---
 
-These are bspwm dotfiles that work on both Linux and **FreeBSD**. Originally designed for Arch Linux, this repository now includes a fully automated installation script for FreeBSD.
+These are bspwm dotfiles that work on both Linux and **FreeBSD**. Originally designed for Arch Linux, this repository now includes a fully automated installation script for FreeBSD with a **full DE-like experience**.
+
+## Features
+
+✨ **DE-like Experience** - Full desktop environment features without the bloat:
+- 🖼️ Wallpaper selector and randomizer
+- 📸 Screenshot tool (full, area, window, with editor)
+- 📋 Clipboard manager with history
+- 🔊 Volume control with notifications
+- 🔆 Brightness control with notifications
+- ⚡ Power menu (lock, logout, suspend, reboot, shutdown)
+- ⚙️ Quick settings menu
+- 🎮 Game mode (disable compositor for gaming)
+- ⌨️ Keybind helper/cheatsheet
+- 🖱️ Tap-to-click touchpad support
+- 🔌 PipeWire audio with OSS support (FreeBSD)
+- 🔐 Polkit authentication agent
+- 📁 USB auto-mount support
+- 🔵 Bluetooth management
+- 🌐 Network management
 
 | Program                             | Name                                                                                                                           |
 | :---                                | :---                                                                                                                           |
@@ -10,6 +29,7 @@ These are bspwm dotfiles that work on both Linux and **FreeBSD**. Originally des
 | Bar                                 | [polybar](https://github.com/jaagr/polybar)                                                                                    |
 | Program Launcher                    | [rofi](https://github.com/DaveDavenport/rofi)                                                                                  |
 | Wallpaper Setter                    | [feh](https://github.com/derf/feh) / [hsetroot](https://github.com/himdel/hsetroot)                                            |
+| Audio System                        | [PipeWire](https://pipewire.org/) with OSS support                                                                             |
 | Web Browser                         | [Firefox](https://firefox.com)                                                                                                 |
 | Icon theme                          | [Flatery](https://www.pling.com/p/1332404)                                                                                     |
 | Text editors/IDE's and Gtk/Qt theme | [Serenade](https://github.com/b4skyx/serenade)                                                                                 |
@@ -38,12 +58,24 @@ sudo sh install-freebsd.sh
 ```
 
 The installer will:
-1. ✅ Install all required packages via `pkg`
+1. ✅ Install all required packages via `pkg` (including PipeWire audio)
 2. ✅ Backup your existing configurations
 3. ✅ Install all dotfiles and themes
-4. ✅ Configure X11 (`.xinitrc`)
+4. ✅ Configure X11 (`.xinitrc`) with tap-to-click support
 5. ✅ Set up ZSH with plugins
 6. ✅ Install FreeBSD-optimized configs for bspwm, sxhkd, polybar, and picom
+7. ✅ Install utility scripts for DE-like features
+8. ✅ Configure PipeWire with OSS support
+
+### Updating Dotfiles
+
+After pulling updates with `git pull`, run the update script:
+
+```sh
+./update.sh
+```
+
+This will update all configurations while preserving your customizations.
 
 ### Installation Options
 
@@ -113,8 +145,14 @@ The installer will automatically install these packages:
 **Terminal & Shell:**
 - alacritty, zsh, zsh-autosuggestions, zsh-syntax-highlighting, tmux
 
+**Audio (PipeWire):**
+- pipewire, wireplumber, libspa-oss, pamixer, playerctl
+
 **Utilities:**
-- neofetch, neovim, mpd, ncmpcpp, mpv, zathura, conky, lf, fzf, fd-find, ripgrep, exa
+- neofetch, neovim, mpd, ncmpcpp, mpv, zathura, conky, lf, fzf, fd-find, ripgrep, exa, scrot, i3lock
+
+**DE-like Utilities (optional):**
+- lxpolkit, pcmanfm, arandr, pavucontrol, blueman, udiskie, redshift, nitrogen, clipmenu
 
 **Fonts:**
 - terminus-font, nerd-fonts, font-awesome
@@ -139,24 +177,88 @@ sh symlink.sh
 
 ## Keyboard Shortcuts
 
+### Window Management
 | Shortcut | Action |
 |----------|--------|
 | `Super + Return` | Open terminal (Alacritty) |
 | `Super + Shift + Return` | Open terminal with tmux |
-| `Alt + Space` | Open application launcher (Rofi) |
-| `Super + w` | Window switcher |
 | `Super + q` | Close window |
 | `Super + Shift + q` | Kill window |
 | `Super + f` | Toggle fullscreen |
 | `Super + u` | Toggle floating |
 | `Super + m` | Toggle monocle layout |
-| `Super + 1-9` | Switch to workspace |
-| `Super + Shift + 1-9` | Move window to workspace |
 | `Super + Arrow Keys` | Focus window in direction |
 | `Super + Shift + Arrow Keys` | Swap window in direction |
 | `Super + Alt + Arrow Keys` | Resize window |
-| `Super + Shift + l` | Lock screen |
-| `Print` | Screenshot |
+| `Alt + Left Click (drag)` | Move floating window |
+| `Alt + Right Click (drag)` | Resize floating window |
+
+### Workspaces
+| Shortcut | Action |
+|----------|--------|
+| `Super + 1-9` | Switch to workspace |
+| `Super + Shift + 1-9` | Move window to workspace |
+| `Super + Tab` | Last workspace |
+| `Super + [ / ]` | Previous / Next workspace |
+| `Alt + Tab` | Cycle occupied workspaces |
+
+### Applications
+| Shortcut | Action |
+|----------|--------|
+| `Alt + Space` | Application launcher (Rofi) |
+| `Super + w` | Window switcher |
+| `Super + r` | Run prompt |
+| `Super + e` | File manager |
+| `Super + b` | Web browser |
+| `Super + t` | Text editor (nvim) |
+
+### DE-like Utilities
+| Shortcut | Action |
+|----------|--------|
+| `Super + s` | Quick settings menu |
+| `Super + x` | Power menu |
+| `Super + h` | Keybind helper |
+| `Super + v` | Clipboard manager |
+| `Super + Shift + w` | Wallpaper selector |
+| `Super + Ctrl + w` | Random wallpaper |
+| `Super + .` | Emoji picker |
+| `Super + F12` | Toggle game mode |
+
+### Screenshots
+| Shortcut | Action |
+|----------|--------|
+| `Print` | Screenshot (full screen) |
+| `Shift + Print` | Screenshot (area selection) |
+| `Super + Print` | Screenshot (active window) |
+| `Super + Shift + Print` | Screenshot menu |
+
+### System
+| Shortcut | Action |
+|----------|--------|
+| `Super + l` | Lock screen |
+| `Super + Escape` | Reload sxhkd |
+| `Super + Shift + Escape` | Reload polybar |
+| `Super + Alt + r` | Restart bspwm |
+| `Super + Alt + q` | Quit bspwm |
+
+### Media Controls
+| Shortcut | Action |
+|----------|--------|
+| `XF86AudioRaiseVolume` | Volume up |
+| `XF86AudioLowerVolume` | Volume down |
+| `XF86AudioMute` | Toggle mute |
+| `XF86MonBrightnessUp` | Brightness up |
+| `XF86MonBrightnessDown` | Brightness down |
+| `XF86AudioPlay` | Play/Pause |
+| `XF86AudioNext` | Next track |
+| `XF86AudioPrev` | Previous track |
+
+### Notifications
+| Shortcut | Action |
+|----------|--------|
+| `Super + Space` | Close notification |
+| `Super + Shift + Space` | Close all notifications |
+| `Super + d` | Toggle do not disturb |
 
 ---
 
@@ -172,7 +274,48 @@ sh symlink.sh
 | `.config/dunst/` | Notification daemon |
 | `.config/alacritty/` | Terminal emulator |
 | `.config/nvim/` | Neovim configuration |
+| `.config/pipewire/` | PipeWire audio configuration |
+| `scripts/` | Utility scripts |
+| `X11/` | X11 input configuration (tap-to-click) |
 | `zsh/.zshrc` | ZSH shell configuration |
+
+---
+
+## Utility Scripts
+
+Located in `~/.local/scripts/` after installation:
+
+| Script | Description |
+|--------|-------------|
+| `powermenu.sh` | Power menu (lock, logout, suspend, reboot, shutdown) |
+| `screenshot.sh` | Screenshot tool with multiple modes |
+| `clipboard.sh` | Clipboard manager |
+| `wallpaper.sh` | Wallpaper selector and randomizer |
+| `volume.sh` | Volume control with notifications |
+| `brightness.sh` | Brightness control with notifications |
+| `quicksettings.sh` | Quick settings menu |
+| `keybinds.sh` | Keybind helper/cheatsheet |
+| `gamemode.sh` | Game mode toggle |
+
+---
+
+## PipeWire Audio (FreeBSD)
+
+This setup uses PipeWire with OSS support for FreeBSD. The configuration automatically:
+- Starts PipeWire, WirePlumber, and pipewire-pulse
+- Provides PulseAudio compatibility (most apps work without changes)
+- Uses FreeBSD's native OSS audio backend
+
+To manually control audio:
+```sh
+# GUI volume control
+pavucontrol
+
+# Command line volume
+~/.local/scripts/volume.sh up 5
+~/.local/scripts/volume.sh down 5
+~/.local/scripts/volume.sh mute
+```
 
 ---
 

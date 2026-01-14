@@ -14,4 +14,7 @@ firefox &
 
 xautolock -detectsleep -time 5 -locker lock.sh -notify 30 -notifier "notify-send -u critical -t 10000 -- 'LOCKING screen in 30 seconds'" &
 # mailsync &
+
+# Start polybar (with a small delay to ensure bspwm is fully initialized)
+sleep 1
 ~/.config/polybar/launch.sh &

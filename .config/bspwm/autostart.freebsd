@@ -1,6 +1,7 @@
 #!/bin/sh
 #
 # bspwm autostart script for FreeBSD
+# Full DE-like experience with all desktop features
 #
 
 # Load Xresources
@@ -8,26 +9,108 @@ if [ -f "$HOME/.Xresources" ]; then
     xrdb -merge "$HOME/.Xresources"
 fi
 
-# Start conky (system monitor)
-pgrep -x conky > /dev/null || conky &
+# ============================================
+# DE-like Services and Applications
+# ============================================
 
-# Start redshift (color temperature adjustment)
-# Note: You may need to configure latitude/longitude in ~/.config/redshift.conf
-if command -v redshift > /dev/null 2>&1; then
-    pgrep -x redshift > /dev/null || redshift &
+# --- Authentication Agent (for GUI privilege escalation) ---
+# Required for GUI apps that need root permissions (like package managers)
+if command -v lxpolkit > /dev/null 2>&1; then
+    pgrep -x lxpolkit > /dev/null || lxpolkit &
+elif command -v polkit-gnome-authentication-agent-1 > /dev/null 2>&1; then
+    pgrep -f polkit-gnome > /dev/null || /usr/local/libexec/polkit-gnome-authentication-agent-1 &
+elif command -v lxqt-policykit-agent > /dev/null 2>&1; then
+    pgrep -f lxqt-policykit > /dev/null || lxqt-policykit-agent &
 fi
 
-# Start browser (optional - comment out if not wanted)
-# firefox &
+# --- D-Bus Session Bus ---
+# Ensure D-Bus is running (required for many desktop apps)
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+    if command -v dbus-launch > /dev/null 2>&1; then
+        eval "$(dbus-launch --sh-syntax)"
+        export DBUS_SESSION_BUS_ADDRESS
+    fi
+fi
 
-# Start MPD (Music Player Daemon)
+# --- Clipboard Manager ---
+# Persistent clipboard that survives application closing
+if command -v clipmenud > /dev/null 2>&1; then
+    pgrep -x clipmenud > /dev/null || clipmenud &
+elif command -v parcellite > /dev/null 2>&1; then
+    pgrep -x parcellite > /dev/null || parcellite &
+elif command -v clipit > /dev/null 2>&1; then
+    pgrep -x clipit > /dev/null || clipit &
+fi
+
+# --- Network Manager Applet ---
+# GUI for managing network connections (shows in system tray)
+if command -v nm-applet > /dev/null 2>&1; then
+    pgrep -x nm-applet > /dev/null || nm-applet &
+fi
+
+# --- Bluetooth Manager ---
+# Bluetooth tray applet
+if command -v blueman-applet > /dev/null 2>&1; then
+    pgrep -x blueman-applet > /dev/null || blueman-applet &
+elif command -v blueberry-tray > /dev/null 2>&1; then
+    pgrep -x blueberry-tray > /dev/null || blueberry-tray &
+fi
+
+# --- Power Manager ---
+# Battery monitoring and power saving (for laptops)
+if command -v xfce4-power-manager > /dev/null 2>&1; then
+    pgrep -x xfce4-power-manager > /dev/null || xfce4-power-manager &
+fi
+
+# --- Volume Control Applet ---
+# System tray volume control
+if command -v volumeicon > /dev/null 2>&1; then
+    pgrep -x volumeicon > /dev/null || volumeicon &
+elif command -v pa-applet > /dev/null 2>&1; then
+    pgrep -x pa-applet > /dev/null || pa-applet &
+elif command -v pasystray > /dev/null 2>&1; then
+    pgrep -x pasystray > /dev/null || pasystray &
+fi
+
+# --- USB/Disk Auto-mount ---
+# Automatically mount USB drives and external disks
+if command -v udiskie > /dev/null 2>&1; then
+    pgrep -x udiskie > /dev/null || udiskie --tray &
+elif command -v pcmanfm > /dev/null 2>&1; then
+    # PCManFM can handle auto-mounting
+    pgrep -x pcmanfm > /dev/null || pcmanfm -d &
+fi
+
+# --- Screen Color Temperature ---
+# Reduces blue light in the evening (eye comfort)
+if command -v redshift > /dev/null 2>&1; then
+    pgrep -x redshift > /dev/null || redshift &
+elif command -v redshift-gtk > /dev/null 2>&1; then
+    pgrep -x redshift-gtk > /dev/null || redshift-gtk &
+fi
+
+# --- Notification Daemon ---
+# Desktop notifications (already started in bspwmrc, but ensure it's running)
+if ! pgrep -x dunst > /dev/null 2>&1; then
+    if command -v dunst > /dev/null 2>&1; then
+        dunst &
+    fi
+fi
+
+# ============================================
+# User Applications
+# ============================================
+
+# --- System Monitor (Conky) ---
+pgrep -x conky > /dev/null || conky &
+
+# --- Music Player Daemon ---
 if command -v mpd > /dev/null 2>&1; then
     pgrep -x mpd > /dev/null || mpd &
 fi
 
-# Screen locker (using xautolock with i3lock or xlock)
-# Note: i3lock may need to be installed from ports/packages
-# Alternative: use xlock which is part of XFree86
+# --- Screen Locker ---
+# Auto-lock screen after inactivity
 if command -v xautolock > /dev/null 2>&1; then
     if command -v i3lock > /dev/null 2>&1; then
         pgrep -x xautolock > /dev/null || xautolock -detectsleep -time 5 -locker "i3lock -c 2a2f33" \
@@ -37,7 +120,17 @@ if command -v xautolock > /dev/null 2>&1; then
     fi
 fi
 
-# Start polybar
+# ============================================
+# Polybar (Status Bar)
+# ============================================
+
+# Start polybar (with a small delay to ensure bspwm is fully initialized)
+sleep 1
 if [ -x "$HOME/.config/polybar/launch.sh" ]; then
     "$HOME/.config/polybar/launch.sh" &
+elif [ -f "$HOME/.config/polybar/launch.sh" ]; then
+    sh "$HOME/.config/polybar/launch.sh" &
+elif command -v polybar > /dev/null 2>&1; then
+    # Fallback: start polybar directly if launch script not found
+    polybar -c "$HOME/.config/polybar/config.ini" main &
 fi

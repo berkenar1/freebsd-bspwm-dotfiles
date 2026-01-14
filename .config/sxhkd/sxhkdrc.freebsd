@@ -2,6 +2,7 @@
 # Program Keybindings #
 #######################
 # FreeBSD compatible sxhkd configuration
+# Full DE-like experience with comprehensive keybindings
 
 # Spawn Terminal
 # Use alacritty as default terminal (more compatible with FreeBSD)
@@ -20,13 +21,81 @@ alt + @space
 super + w
 	rofi -show window
 
-# Screenshot (using scrot - more widely available)
-Print
-	scrot "$HOME/Pictures/screenshot-%Y%m%d-%H%M%S.png" && notify-send "Screenshot saved"
+# Rofi run prompt
+super + r
+	rofi -show run
 
-# Screenshot with selection
+#----~ Screenshots ~----#
+
+# Screenshot full screen
+Print
+	~/.local/scripts/screenshot.sh full
+
+# Screenshot with area selection
 shift + Print
-	scrot -s "$HOME/Pictures/screenshot-%Y%m%d-%H%M%S.png" && notify-send "Screenshot saved"
+	~/.local/scripts/screenshot.sh area
+
+# Screenshot active window
+super + Print
+	~/.local/scripts/screenshot.sh window
+
+# Screenshot menu
+super + shift + Print
+	~/.local/scripts/screenshot.sh
+
+#----~ DE-like Utilities ~----#
+
+# Clipboard manager
+super + v
+	~/.local/scripts/clipboard.sh show
+
+# Emoji picker (using rofi)
+super + period
+	rofi -show emoji -modi emoji || rofimoji
+
+# Wallpaper selector
+super + shift + w
+	~/.local/scripts/wallpaper.sh select
+
+# Random wallpaper
+super + ctrl + w
+	~/.local/scripts/wallpaper.sh random
+
+# Quick settings menu
+super + s
+	~/.local/scripts/quicksettings.sh
+
+# Power menu
+super + x
+	~/.local/scripts/powermenu.sh
+
+# Keybind helper
+super + h
+	~/.local/scripts/keybinds.sh
+
+# Game mode toggle
+super + F12
+	~/.local/scripts/gamemode.sh toggle
+
+# File manager (GUI)
+super + e
+	pcmanfm || thunar || nautilus || alacritty -e lf
+
+# File manager (terminal)
+super + shift + e
+	alacritty -e lf
+
+# Web browser
+super + b
+	firefox || chromium || brave
+
+# Text editor
+super + t
+	alacritty -e nvim
+
+# System monitor
+super + shift + m
+	alacritty -e htop || alacritty -e top
 
 #####################
 # BSPWM Keybindings #
@@ -36,15 +105,15 @@ shift + Print
 
 # make sxhkd reload its configuration files:
 super + Escape
-	pkill -USR1 -x sxhkd
+	pkill -USR1 -x sxhkd; notify-send "sxhkd" "Configuration reloaded"
 
 # Toggle compositor
 super + shift + c
-	{ pkill picom; notify-send "Compositor disabled"; } || { picom & notify-send "Compositor enabled"; }
+	pgrep picom && { pkill picom; notify-send "Picom" "Compositor disabled"; } || { picom & notify-send "Picom" "Compositor enabled"; }
 
 # Reload Polybar
 super + shift + Escape
-	~/.config/polybar/launch.sh
+	~/.config/polybar/launch.sh; notify-send "Polybar" "Reloaded"
 
 # quit/restart bspwm
 super + alt + {q,r}
@@ -73,6 +142,8 @@ super + {grave,Tab}
 # alternate between the tiled and monocle layout
 super + m
 	bspc desktop -l next
+
+# Toggle fullscreen
 super + f
 	bspc node -t \~fullscreen
 
@@ -96,7 +167,11 @@ super + i
 super + shift + r
 	bspc node @/ -R 90
 
-#send node to next/previous window
+# Flip layout horizontally/vertically
+super + {_,shift + }semicolon
+	bspc node @/ -F {horizontal,vertical}
+
+#send node to next/previous workspace and follow
 super + {_, shift} + k
 	bspc node -d {next, prev} -f
 
@@ -104,6 +179,10 @@ super + {_, shift} + k
 
 # focus the node in the given direction
 super + {Left, Down, Up, Right}
+	bspc node -f {west,south,north,east}
+
+# focus the node in the given direction (vim keys)
+super + {j,k,l,semicolon}
 	bspc node -f {west,south,north,east}
 
 # focus the node for the given path jump
@@ -121,6 +200,10 @@ super + bracket{left,right}
 # focus or send to the given desktop
 super + {_,shift + }{1-9}
 	bspc {desktop -f,node -d} '^{1-9}'
+
+# focus or send to desktop 10
+super + {_,shift + }0
+	bspc {desktop -f,node -d} '^10'
 
 # Switch places with the direction window
 super + shift + {Left, Down, Up, Right}
@@ -146,54 +229,108 @@ super + ctrl + shift + space
 
 #----~ Movement/Resizing ~----#
 
-# Resize windows
+# Resize windows (expand)
 super + alt + {Left, Down, Up, Right}
 	bspc node -z {left -25 0, bottom 0 25, top 0 -25, right 25 0}
 
+# Resize windows (shrink)
 super + alt + shift + {Left, Down, Up, Right}
 	bspc node -z {right -25 0, top 0 25, bottom 0 -25, left 25 0}
+
+# Move floating window
+super + ctrl + {Left, Down, Up, Right}
+	bspc node -v {-25 0, 0 25, 0 -25, 25 0}
 
 ###################################
 ########### System Keys ###########
 ###################################
 
-# Volume Control (using mixer on FreeBSD)
-# FreeBSD uses OSS (mixer) by default instead of ALSA/PulseAudio
-# mixer: FreeBSD's native audio mixer
-# pamixer: Only works if PulseAudio is installed
+#----~ Volume Control ~----#
+# Uses custom script with notifications
+# Falls back to native commands if script not available
 
 XF86AudioLowerVolume
-	mixer vol -5 || pamixer -d 5
+	~/.local/scripts/volume.sh down 5 || mixer vol -5 || pamixer -d 5
 
 XF86AudioRaiseVolume
-	mixer vol +5 || pamixer -i 5
+	~/.local/scripts/volume.sh up 5 || mixer vol +5 || pamixer -i 5
 
 XF86AudioMute
-	mixer vol ^mute || pamixer -t
+	~/.local/scripts/volume.sh mute || mixer vol ^mute || pamixer -t
 
-# Brightness control
-# FreeBSD options:
-# - backlight(8): pkg install backlight-utils
-# - intel_backlight: For Intel GPUs
-# - sysctl hw.acpi.video.lcd0.brightness: ACPI method
+# Fine volume control with shift
+shift + XF86AudioLowerVolume
+	~/.local/scripts/volume.sh down 1 || mixer vol -1 || pamixer -d 1
+
+shift + XF86AudioRaiseVolume
+	~/.local/scripts/volume.sh up 1 || mixer vol +1 || pamixer -i 1
+
+#----~ Brightness Control ~----#
+# Uses custom script with notifications
+
 XF86MonBrightnessDown
-	backlight decr 5 || intel_backlight -5 || sysctl hw.acpi.video.lcd0.brightness=$(expr $(sysctl -n hw.acpi.video.lcd0.brightness) - 5)
+	~/.local/scripts/brightness.sh dec 5
 
 XF86MonBrightnessUp
-	backlight incr 5 || intel_backlight +5 || sysctl hw.acpi.video.lcd0.brightness=$(expr $(sysctl -n hw.acpi.video.lcd0.brightness) + 5)
+	~/.local/scripts/brightness.sh inc 5
 
-# Lock screen (using i3lock or xlock)
+# Fine brightness control with shift
+shift + XF86MonBrightnessDown
+	~/.local/scripts/brightness.sh dec 1
+
+shift + XF86MonBrightnessUp
+	~/.local/scripts/brightness.sh inc 1
+
+#----~ Media Controls ~----#
+
+XF86AudioPlay
+	playerctl play-pause || mpc toggle
+
+XF86AudioPause
+	playerctl pause || mpc pause
+
+XF86AudioNext
+	playerctl next || mpc next
+
+XF86AudioPrev
+	playerctl previous || mpc prev
+
+XF86AudioStop
+	playerctl stop || mpc stop
+
+# Alternative media keys (for keyboards without XF86 keys)
+super + {comma, period, slash}
+	playerctl {previous, play-pause, next} || mpc {prev, toggle, next}
+
+#----~ Lock Screen ~----#
+
 super + shift + l
+	~/.local/scripts/powermenu.sh || i3lock -c 2a2f33 || xlock -mode blank
+
+# Lock screen immediately
+super + l
 	i3lock -c 2a2f33 || xlock -mode blank
 
-# Media Controls (if playerctl is installed)
-super + {less, greater, question}
-	playerctl {previous, next, play-pause}
-
-# Open file manager (lf terminal file manager)
-super + e
-	alacritty -e lf
+#----~ Music Player ~----#
 
 # Open ncmpcpp (music player)
 super + alt + m
 	alacritty -e ncmpcpp
+
+#----~ Notifications ~----#
+
+# Close notification
+super + space
+	dunstctl close
+
+# Close all notifications
+super + shift + space
+	dunstctl close-all
+
+# Show notification history
+super + grave
+	dunstctl history-pop
+
+# Toggle do not disturb
+super + d
+	dunstctl set-paused toggle && notify-send "Notifications" "$(dunstctl is-paused && echo 'Paused' || echo 'Active')"
