@@ -72,11 +72,16 @@ if command -v xfce4-power-manager > /dev/null 2>&1; then
 fi
 
 # Auto-lock and suspend: prefer xss-lock (works well with system suspend helper) or fallback to xautolock
-if command -v xss-lock >/dev/null 2>&1 && command -v i3lock >/dev/null 2>&1; then
-    pgrep -x xss-lock >/dev/null 2>&1 || xss-lock -- i3lock -c 000000 &
-elif command -v xautolock >/dev/null 2>&1; then
-    # Use suspend.sh which locks and then suspends the system (requires sudo or root)
-    pgrep -x xautolock >/dev/null 2>&1 || xautolock -detectsleep -time 30 -locker "$HOME/.local/scripts/suspend.sh" &
+# Respect "caffeine" mode: if $XDG_CONFIG_HOME/bspwm/caffeine exists, skip autolock
+if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/bspwm/caffeine" ]; then
+    echo "Caffeine mode active — skipping auto-lock/autosuspend"
+else
+    if command -v xss-lock >/dev/null 2>&1 && command -v i3lock >/dev/null 2>&1; then
+        pgrep -x xss-lock >/dev/null 2>&1 || xss-lock -- i3lock -c 000000 &
+    elif command -v xautolock >/dev/null 2>&1; then
+        # Use suspend.sh which locks and then suspends the system (requires sudo or root)
+        pgrep -x xautolock >/dev/null 2>&1 || xautolock -detectsleep -time 30 -locker "$HOME/.local/scripts/suspend.sh" &
+    fi
 fi
 
 # --- Volume Control Applet ---

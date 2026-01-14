@@ -77,6 +77,10 @@ super + h
 super + F12
 	~/.local/scripts/gamemode.sh toggle
 
+# Caffeine toggle (prevent auto-sleep / auto-lock)
+super + ctrl + c
+	~/.local/scripts/caffeine.sh toggle
+
 # File manager (GUI)
 super + e
 	pcmanfm || thunar || nautilus || alacritty -e lf
