@@ -149,10 +149,13 @@ The installer will automatically install these packages:
 - pipewire, wireplumber, libspa-oss, pamixer, playerctl
 
 **Utilities:**
-- neofetch, neovim, mpd, ncmpcpp, mpv, zathura, conky, lf, fzf, fd-find, ripgrep, exa, scrot, i3lock
+- neofetch, neovim, ncmpcpp, mpv, zathura, conky, lf, fzf, fd-find, ripgrep, exa, scrot, i3lock
+
+**Note about music (MPD):**
+- `ncmpcpp` is a client for `mpd` (Music Player Daemon). `mpd` may not be available as a binary package in some FreeBSD repositories; if you want a web client instead, consider `ympd`, or install `mpd` from ports.
 
 **DE-like Utilities (optional):**
-- lxpolkit, pcmanfm, arandr, pavucontrol, blueman, udiskie, redshift, nitrogen, clipmenu
+- polkit-gnome, pcmanfm, arandr, pavucontrol, libudisks, redshift, nitrogen, clipmenu, rofi-emoji
 
 **Fonts:**
 - terminus-font, nerd-fonts, font-awesome

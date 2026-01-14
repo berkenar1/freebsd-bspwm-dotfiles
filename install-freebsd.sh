@@ -190,9 +190,12 @@ playerctl
 "
 
 # Utilities
+# Note: 'mpd' (Music Player Daemon) may not be available as a binary package on
+# all FreeBSD repositories; it is optional. The installer will not break if a
+# package is unavailable, but you can install MPD manually or use web/GUI
+# clients (e.g., 'ympd') if you prefer.
 UTIL_PACKAGES="
 neofetch
-mpd
 ncmpcpp
 mpv
 zathura
@@ -919,6 +922,15 @@ print_post_install() {
     echo "   For SLiM:"
     echo "     Add to /etc/rc.conf:"
     echo "       slim_enable=\"YES\""
+    echo ""
+    echo "Optional packages you may want to install:"
+    echo "  mpd ncmpcpp (music) — mpd may not be available as a binary package; see README"
+    echo "  vnstat (network stats)"
+    echo "  dunst (notifications)"
+    echo "  polkit-gnome (polkit agent)"
+    echo "  libudisks (udisksctl support)"
+    echo "  ympd (MPD web client)"
+    echo "Install with: sudo pkg install mpd ncmpcpp vnstat dunst polkit-gnome libudisks ympd"
     echo ""
     if [ "$CREATE_BACKUP" = true ]; then
         echo "Your previous configuration was backed up to:"
