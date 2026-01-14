@@ -122,6 +122,16 @@ zsh-syntax-highlighting
 tmux
 "
 
+# Audio packages (PipeWire for FreeBSD)
+AUDIO_PACKAGES="
+pipewire
+wireplumber
+libspa-oss
+pulseaudio-utils
+pamixer
+playerctl
+"
+
 # Utilities
 UTIL_PACKAGES="
 neofetch
@@ -141,8 +151,22 @@ xautolock
 xdotool
 xclip
 xsel
-playerctl
-pamixer
+scrot
+i3lock
+"
+
+# DE-like utilities (optional but recommended)
+DE_PACKAGES="
+lxpolkit
+pcmanfm
+arandr
+pavucontrol
+blueman
+udiskie
+redshift
+nitrogen
+clipmenu
+rofi-emoji
 "
 
 # Fonts
@@ -203,6 +227,26 @@ install_packages() {
         else
             log_info "Installing: $pkg"
             pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
+        fi
+    done
+
+    log_info "Installing audio packages (PipeWire)..."
+    for pkg in $AUDIO_PACKAGES; do
+        if pkg info -e "$pkg" > /dev/null 2>&1; then
+            log_info "Package already installed: $pkg"
+        else
+            log_info "Installing: $pkg"
+            pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
+        fi
+    done
+
+    log_info "Installing DE-like utility packages..."
+    for pkg in $DE_PACKAGES; do
+        if pkg info -e "$pkg" > /dev/null 2>&1; then
+            log_info "Package already installed: $pkg"
+        else
+            log_info "Installing: $pkg"
+            pkg install -y "$pkg" || log_warning "Failed to install: $pkg (optional)"
         fi
     done
 
@@ -357,6 +401,47 @@ install_dotfiles() {
     if [ -f "$DOTFILES_DIR/.tmux.conf" ]; then
         log_info "Installing .tmux.conf..."
         cp "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+    fi
+
+    # Install X11 touchpad configuration (for tap-to-click)
+    if [ -f "$DOTFILES_DIR/X11/40-libinput.conf" ]; then
+        log_info "Installing X11 touchpad configuration..."
+        X11_CONF_DIR="/usr/local/etc/X11/xorg.conf.d"
+        if [ -d "$X11_CONF_DIR" ] || mkdir -p "$X11_CONF_DIR" 2>/dev/null; then
+            if cp "$DOTFILES_DIR/X11/40-libinput.conf" "$X11_CONF_DIR/" 2>/dev/null; then
+                log_success "Touchpad tap-to-click configuration installed!"
+            else
+                log_warning "Could not install X11 config. Run as root or copy manually:"
+                log_warning "  sudo cp $DOTFILES_DIR/X11/40-libinput.conf $X11_CONF_DIR/"
+            fi
+        else
+            log_warning "Could not create $X11_CONF_DIR. Copy manually:"
+            log_warning "  sudo mkdir -p $X11_CONF_DIR"
+            log_warning "  sudo cp $DOTFILES_DIR/X11/40-libinput.conf $X11_CONF_DIR/"
+        fi
+    fi
+
+    # Install scripts to ~/.local/scripts
+    if [ -d "$DOTFILES_DIR/scripts" ]; then
+        log_info "Installing scripts..."
+        mkdir -p "$HOME/.local/scripts"
+        for script in "$DOTFILES_DIR/scripts"/*; do
+            if [ -f "$script" ]; then
+                script_name=$(basename "$script")
+                cp "$script" "$HOME/.local/scripts/"
+                chmod +x "$HOME/.local/scripts/$script_name"
+                log_info "  Installed: $script_name"
+            fi
+        done
+        log_success "Scripts installed to ~/.local/scripts"
+    fi
+
+    # Install FreeBSD-specific PipeWire configuration
+    if [ -f "$DOTFILES_DIR/.config/pipewire/pipewire-freebsd.conf" ]; then
+        log_info "Installing FreeBSD PipeWire configuration..."
+        mkdir -p "$XDG_CONFIG_HOME/pipewire"
+        cp "$DOTFILES_DIR/.config/pipewire/pipewire-freebsd.conf" "$XDG_CONFIG_HOME/pipewire/pipewire.conf"
+        log_success "PipeWire OSS configuration installed!"
     fi
 
     log_success "Dotfiles installed!"

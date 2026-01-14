@@ -78,6 +78,12 @@ dunst &
 setxkbmap -option caps:backspace
 
 # AUTOSTART
-# set wallpaper using hsetroot
-hsetroot -cover ~/.config/wallpaper.jpg &
+# Set wallpaper using feh (with hsetroot as fallback)
+if [ -f ~/.config/wallpaper.jpg ]; then
+    if command -v feh > /dev/null 2>&1; then
+        feh --bg-fill ~/.config/wallpaper.jpg &
+    elif command -v hsetroot > /dev/null 2>&1; then
+        hsetroot -cover ~/.config/wallpaper.jpg &
+    fi
+fi
 ~/.config/bspwm/autostart &

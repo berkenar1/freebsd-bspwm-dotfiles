@@ -7,7 +7,7 @@ configuration {
 	font: "Sarasa UI K 12";
 }
 
-@import "colors"
+@import "colors.rasi"
 
 window {
 	width: 30em;

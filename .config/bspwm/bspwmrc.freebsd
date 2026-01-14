@@ -84,6 +84,22 @@ bspc desktop -f 1
 # INIT-DAEMONS
 xsetroot -cursor_name left_ptr &
 
+# Start PipeWire audio system (FreeBSD)
+# PipeWire replaces PulseAudio and provides better audio handling
+# Note: Do NOT start pulseaudio if using pipewire-pulse
+if command -v pipewire > /dev/null 2>&1; then
+    pgrep -x pipewire > /dev/null || pipewire &
+    sleep 0.5
+    # WirePlumber is the session manager for PipeWire
+    if command -v wireplumber > /dev/null 2>&1; then
+        pgrep -x wireplumber > /dev/null || wireplumber &
+    fi
+    # PipeWire-Pulse provides PulseAudio compatibility
+    if command -v pipewire-pulse > /dev/null 2>&1; then
+        pgrep -x pipewire-pulse > /dev/null || pipewire-pulse &
+    fi
+fi
+
 # Start sxhkd (hotkey daemon)
 pgrep -x sxhkd > /dev/null || sxhkd &
 
@@ -98,12 +114,12 @@ pgrep -x dunst > /dev/null || dunst &
 setxkbmap -option caps:backspace
 
 # AUTOSTART
-# Set wallpaper using hsetroot or feh
+# Set wallpaper using feh (with hsetroot as fallback)
 if [ -f "$HOME/.config/wallpaper.jpg" ]; then
-    if command -v hsetroot > /dev/null 2>&1; then
-        hsetroot -cover "$HOME/.config/wallpaper.jpg" &
-    elif command -v feh > /dev/null 2>&1; then
+    if command -v feh > /dev/null 2>&1; then
         feh --bg-fill "$HOME/.config/wallpaper.jpg" &
+    elif command -v hsetroot > /dev/null 2>&1; then
+        hsetroot -cover "$HOME/.config/wallpaper.jpg" &
     fi
 fi
 
