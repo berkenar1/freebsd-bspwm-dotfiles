@@ -42,8 +42,15 @@ get_volume() {
     elif command -v amixer > /dev/null 2>&1; then
         amixer sget Master | grep -oP '\d+%' | head -1 | tr -d '%'
     elif command -v mixer > /dev/null 2>&1; then
-        # FreeBSD mixer - output format is "vol:left:right" or similar
-        mixer vol 2>/dev/null | awk '{gsub(/[^0-9:]/, ""); split($0, a, ":"); print a[2]}' | head -1
+        # FreeBSD mixer - try to extract volume percentage
+        # Output format varies, try to handle common formats
+        vol_output=$(mixer vol 2>/dev/null)
+        if [ -n "$vol_output" ]; then
+            # Try to extract first number from output
+            echo "$vol_output" | grep -oE '[0-9]+' | head -1
+        else
+            echo "50"
+        fi
     else
         echo "0"
     fi

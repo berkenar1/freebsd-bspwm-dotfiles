@@ -46,9 +46,12 @@ gamemode_on() {
     # Set performance mode if available (FreeBSD)
     if [ "$(uname)" = "FreeBSD" ]; then
         # Get the maximum available frequency and set it
-        max_freq=$(sysctl -n dev.cpu.0.freq_levels 2>/dev/null | awk -F'/' '{print $1}' | head -1)
-        if [ -n "$max_freq" ]; then
-            sudo sysctl dev.cpu.0.freq="$max_freq" 2>/dev/null
+        freq_levels=$(sysctl -n dev.cpu.0.freq_levels 2>/dev/null)
+        if [ -n "$freq_levels" ]; then
+            max_freq=$(echo "$freq_levels" | awk -F'/' '{print $1}' | head -1)
+            if [ -n "$max_freq" ] && [ "$max_freq" -gt 0 ] 2>/dev/null; then
+                sudo sysctl dev.cpu.0.freq="$max_freq" 2>/dev/null
+            fi
         fi
     fi
     

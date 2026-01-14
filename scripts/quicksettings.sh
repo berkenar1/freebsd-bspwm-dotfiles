@@ -181,7 +181,12 @@ system_info() {
     sys_name=$(uname -sr)
     host_name=$(hostname)
     uptime_info=$(uptime -p 2>/dev/null || uptime | awk -F'up ' '{print $2}' | awk -F',' '{print $1}')
-    cpu_info=$(sysctl -n hw.model 2>/dev/null || grep 'model name' /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2)
+    
+    # CPU info - FreeBSD first, then Linux fallback (with trimming)
+    cpu_info=$(sysctl -n hw.model 2>/dev/null)
+    if [ -z "$cpu_info" ]; then
+        cpu_info=$(grep 'model name' /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^[[:space:]]*//')
+    fi
     
     # Memory info - FreeBSD first, then Linux fallback
     if command -v sysctl > /dev/null 2>&1 && [ "$(uname)" = "FreeBSD" ]; then
