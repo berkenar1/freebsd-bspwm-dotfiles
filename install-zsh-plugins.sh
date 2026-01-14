@@ -20,7 +20,7 @@ install_plugin() {
     if [ -d "$PLUGIN_DIR/$name" ]; then
         echo "Updating: $name"
         cd "$PLUGIN_DIR/$name"
-        git pull --quiet || echo "  Warning: Could not update $name"
+        git pull --quiet --ff-only || echo "  Warning: Could not update $name (may have local changes)"
     else
         echo "Installing: $name"
         git clone --depth=1 "$repo" "$PLUGIN_DIR/$name"

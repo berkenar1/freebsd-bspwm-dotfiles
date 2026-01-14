@@ -7,8 +7,9 @@
 bspc monitor -d 1 2 3 4 5 6 7 8 9
 
 # Detect external monitor (FreeBSD compatible)
-# Note: Adjust monitor names as needed (e.g., HDMI-0, VGA-0, etc.)
-external_monitor=$(xrandr --query | grep 'HDMI-0 connected' 2>/dev/null || xrandr --query | grep 'HDMI-1 connected' 2>/dev/null)
+# Run xrandr once and check for HDMI connections
+xrandr_output=$(xrandr --query 2>/dev/null)
+external_monitor=$(echo "$xrandr_output" | grep -E 'HDMI-[0-1] connected' | head -1)
 
 if [ -n "$external_monitor" ]; then
     # Get the actual monitor name

@@ -133,7 +133,7 @@ if command -v exa > /dev/null 2>&1; then
 fi
 
 alias :q='exit'
-alias ssh-public-key='cat ~/.ssh/id_rsa.pub'
+alias ssh-public-key='cat ~/.ssh/id_*.pub 2>/dev/null | head -1 || echo "No SSH public key found"'
 
 # Editor alias
 if command -v nvim > /dev/null 2>&1; then

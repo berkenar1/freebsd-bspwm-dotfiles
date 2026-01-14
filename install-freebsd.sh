@@ -55,8 +55,7 @@ for arg in "$@"; do
             exit 0
             ;;
         *)
-            echo "Unknown option: $arg"
-            echo "Use --help for usage information"
+            echo "Unknown option: $arg. Use $0 --help for usage information"
             exit 1
             ;;
     esac
@@ -341,7 +340,10 @@ install_dotfiles() {
         done
         # Update font cache
         if command -v fc-cache > /dev/null 2>&1; then
-            fc-cache -f "$HOME/.fonts" 2>/dev/null || true
+            log_info "Updating font cache..."
+            fc-cache -f "$HOME/.fonts" || log_warning "Font cache update failed - fonts may not display correctly"
+        else
+            log_warning "fc-cache not found - install fontconfig to enable font caching"
         fi
     fi
 
@@ -415,7 +417,8 @@ install_zsh_config() {
     fi
 
     # Set zsh as default shell if not already
-    current_shell=$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f7 || grep "^$(whoami):" /etc/passwd | cut -d: -f7)
+    # FreeBSD doesn't have getent by default, so check /etc/passwd directly
+    current_shell=$(grep "^$(whoami):" /etc/passwd 2>/dev/null | cut -d: -f7)
     zsh_path=$(command -v zsh 2>/dev/null || echo "/usr/local/bin/zsh")
     
     if [ -x "$zsh_path" ] && [ "$current_shell" != "$zsh_path" ]; then

@@ -168,7 +168,7 @@ XF86AudioRaiseVolume
 	mixer vol +5 || pamixer -i 5
 
 XF86AudioMute
-	mixer vol 0 || pamixer -t
+	mixer vol ^mute || pamixer -t
 
 # Brightness control
 # Note: Install 'backlight' package or use sysctl on FreeBSD

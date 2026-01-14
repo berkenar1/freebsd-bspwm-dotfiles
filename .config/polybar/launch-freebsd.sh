@@ -10,10 +10,8 @@ killall -q polybar 2>/dev/null
 while pgrep -u "$(id -u)" -x polybar > /dev/null; do sleep 1; done
 
 # Get network interface
-# FreeBSD typically uses different interface naming (e.g., em0, re0, wlan0)
-if command -v route > /dev/null 2>&1; then
-    DEFAULT_NETWORK_INTERFACE=$(route -n get default 2>/dev/null | grep interface | awk '{print $2}')
-fi
+# FreeBSD uses route command which is always available
+DEFAULT_NETWORK_INTERFACE=$(route -n get default 2>/dev/null | grep interface | awk '{print $2}')
 
 # Fallback: try to find a wireless or ethernet interface
 if [ -z "$DEFAULT_NETWORK_INTERFACE" ]; then
