@@ -39,30 +39,39 @@ _bc() {
 }
 
 #### BSPWM configuration ####
-_bc window_gap                     8
-_bc top_padding                    26
-_bc top_monocle_padding            0
-_bc border_width                   2
-_bc bottom_padding                 0
-_bc left_padding                   0
-_bc right_padding                  0
-_bc single_monocle                 false
-_bc click_to_focus                 false
-_bc split_ratio                    0.50
-_bc borderless_monocle             true
-_bc gapless_monocle                true
-_bc focus_by_distance              true
-_bc paddingless_monocle            true
-_bc focus_follows_pointer          true
-_bc ignore_ewmh_focus              true
-_bc history_aware_focus            true
-_bc remove_disabled_monitors       true
-_bc merge_overlapping_monitors     true
-_bc pointer_follows_monitor        true
-_bc pointer_modifier mod1
-_bc pointer_action1 move
-_bc pointer_action2 resize_side
-_bc pointer_action3 resize_corner
+# Helper to set bspc config options only when supported by the installed bspwm
+_set_bspc() {
+    key="$1"
+    val="$2"
+    if bspc config "$key" >/dev/null 2>&1; then
+        bspc config "$key" "$val"
+    fi
+}
+
+_set_bspc window_gap                     8
+_set_bspc top_padding                    26
+_set_bspc top_monocle_padding            0
+_set_bspc border_width                   2
+_set_bspc bottom_padding                 0
+_set_bspc left_padding                   0
+_set_bspc right_padding                  0
+_set_bspc single_monocle                 false
+_set_bspc click_to_focus                 false
+_set_bspc split_ratio                    0.50
+_set_bspc borderless_monocle             true
+_set_bspc gapless_monocle                true
+_set_bspc focus_by_distance              true
+_set_bspc paddingless_monocle            true
+_set_bspc focus_follows_pointer          true
+_set_bspc ignore_ewmh_focus              true
+_set_bspc history_aware_focus            true
+_set_bspc remove_disabled_monitors       true
+_set_bspc merge_overlapping_monitors     true
+_set_bspc pointer_follows_monitor        true
+_set_bspc pointer_modifier mod1
+_set_bspc pointer_action1 move
+_set_bspc pointer_action2 resize_side
+_set_bspc pointer_action3 resize_corner
 
 # Colors
 bspc config active_border_color "#474f54"

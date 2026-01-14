@@ -58,8 +58,25 @@ fi
 
 # --- Power Manager ---
 # Battery monitoring and power saving (for laptops)
+# Enable DPMS and autolock/suspend if possible
+if command -v xset >/dev/null 2>&1; then
+    # Screen saver and DPMS timeouts (seconds)
+    xset s 300 300
+    xset +dpms
+    xset dpms 600 900 1200
+fi
+
+# Start power manager if available
 if command -v xfce4-power-manager > /dev/null 2>&1; then
     pgrep -x xfce4-power-manager > /dev/null || xfce4-power-manager &
+fi
+
+# Auto-lock and suspend: prefer xss-lock (works well with system suspend helper) or fallback to xautolock
+if command -v xss-lock >/dev/null 2>&1 && command -v i3lock >/dev/null 2>&1; then
+    pgrep -x xss-lock >/dev/null 2>&1 || xss-lock -- i3lock -c 000000 &
+elif command -v xautolock >/dev/null 2>&1; then
+    # Use suspend.sh which locks and then suspends the system (requires sudo or root)
+    pgrep -x xautolock >/dev/null 2>&1 || xautolock -detectsleep -time 30 -locker "$HOME/.local/scripts/suspend.sh" &
 fi
 
 # --- Volume Control Applet ---
