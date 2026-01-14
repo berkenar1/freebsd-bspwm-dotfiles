@@ -1,0 +1,210 @@
+# FreeBSD compatible zsh configuration
+# .zshrc
+
+# == Set Locale ==
+export LC_CTYPE=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+# == History Configuration ==
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_dups
+setopt hist_ignore_all_dups
+setopt hist_find_no_dups
+
+# == Basic ZSH Options ==
+setopt autocd
+setopt extendedglob
+setopt nomatch
+setopt notify
+unsetopt beep
+
+# == Completion System ==
+autoload -Uz compinit
+compinit
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+
+# == Key Bindings ==
+bindkey -v  # vi mode
+bindkey '^R' history-incremental-search-backward
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+bindkey '^H' backward-kill-word
+
+# == Sourcing Plugins ==
+# Note: These plugins need to be installed separately
+# You can install them via: git clone <repo> ~/.zsh-plugins/<name>
+
+# vi-mode plugin (optional)
+if [ -f "$HOME/.zsh-plugins/vi-mode.zsh/vi-mode.plugin.zsh" ]; then
+    source "$HOME/.zsh-plugins/vi-mode.zsh/vi-mode.plugin.zsh"
+fi
+
+# Base configuration
+if [ -f "$HOME/.zsh-plugins/wbase.zsh/wbase.zsh" ]; then
+    source "$HOME/.zsh-plugins/wbase.zsh/wbase.zsh"
+fi
+
+# Enable fish-shell like autosuggestion
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=247'
+ZSH_AUTOSUGGEST_USE_ASYNC=1
+
+if [ -f "$HOME/.zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" ]; then
+    source "$HOME/.zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+    bindkey '^ ' autosuggest-accept
+    bindkey '^f' autosuggest-accept
+fi
+
+# fzf keybindings and completion (FreeBSD compatible paths)
+if command -v fzf > /dev/null 2>&1; then
+    # Try different possible locations for fzf scripts
+    for fzf_path in \
+        /usr/local/share/examples/fzf/shell \
+        /usr/local/share/fzf/shell \
+        "$HOME/.zsh-plugins/fzf"; do
+        if [ -f "$fzf_path/completion.zsh" ]; then
+            source "$fzf_path/completion.zsh"
+        fi
+        if [ -f "$fzf_path/key-bindings.zsh" ]; then
+            source "$fzf_path/key-bindings.zsh"
+        fi
+    done
+fi
+
+# Git prompt
+if [ -f "$HOME/.zsh-plugins/git-prompt.zsh/git-prompt.zsh" ]; then
+    source "$HOME/.zsh-plugins/git-prompt.zsh/git-prompt.zsh"
+fi
+if [ -f "$HOME/.zsh-plugins/git-prompt.zsh/examples/myprompt.zsh" ]; then
+    source "$HOME/.zsh-plugins/git-prompt.zsh/examples/myprompt.zsh"
+fi
+
+# Syntax highlighting (must be loaded after all `zle -N` calls)
+if [ -f "$HOME/.zsh-plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]; then
+    source "$HOME/.zsh-plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+elif [ -f /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+    # FreeBSD pkg installed version
+    source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+# History substring search (must be loaded after syntax highlighting)
+if [ -f "$HOME/.zsh-plugins/zsh-history-substring-search/zsh-history-substring-search.zsh" ]; then
+    source "$HOME/.zsh-plugins/zsh-history-substring-search/zsh-history-substring-search.zsh"
+    bindkey '^k' history-substring-search-up
+    bindkey '^j' history-substring-search-down
+fi
+
+# Autosuggestions from pkg
+if [ -f /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
+# == Simple Prompt (fallback if git-prompt not available) ==
+if ! type gitprompt > /dev/null 2>&1; then
+    # Simple prompt with hostname, directory, and vi mode indicator
+    function zle-line-init zle-keymap-select {
+        VIM_PROMPT="%F{yellow}[NORMAL]%f"
+        INS_PROMPT="%F{green}[INSERT]%f"
+        PROMPT="${${KEYMAP/vicmd/$VIM_PROMPT}/(main|viins)/$INS_PROMPT} %F{blue}%n@%m%f:%F{cyan}%~%f %# "
+        zle reset-prompt
+    }
+    zle -N zle-line-init
+    zle -N zle-keymap-select
+fi
+
+# == Aliases ==
+# FreeBSD compatible aliases
+alias ...='cd ../..'
+alias grep='grep --color=auto'
+alias ll='ls -lah'
+alias la='ls -lAh'
+alias l='ls -CF'
+
+# Use exa if available
+if command -v exa > /dev/null 2>&1; then
+    alias ls='exa --color=auto --icons'
+    alias la='exa -lah --color=auto --icons'
+    alias ll='exa -lh --color=auto --icons'
+fi
+
+alias :q='exit'
+alias ssh-public-key='cat ~/.ssh/id_rsa.pub'
+
+# Editor alias
+if command -v nvim > /dev/null 2>&1; then
+    alias vim='nvim'
+    alias vi='nvim'
+fi
+
+# Package management shortcuts for FreeBSD
+alias pkg-update='sudo pkg update && sudo pkg upgrade'
+alias pkg-search='pkg search'
+alias pkg-info='pkg info'
+alias pkg-install='sudo pkg install'
+alias pkg-remove='sudo pkg remove'
+alias pkg-autoremove='sudo pkg autoremove'
+
+# System shortcuts
+alias ports-update='sudo portsnap fetch update'
+alias service-list='service -l'
+alias service-status='service -e'
+
+# Network
+alias myip='curl -s ifconfig.me'
+alias netstat-listen='sockstat -4 -l'
+
+# Quick edit configs
+alias zshrc='${EDITOR:-vim} ~/.zshrc'
+alias bspwmrc='${EDITOR:-vim} ~/.config/bspwm/bspwmrc'
+alias sxhkdrc='${EDITOR:-vim} ~/.config/sxhkd/sxhkdrc'
+
+# == PATH Configuration ==
+# Add local bin directories to PATH
+typeset -U PATH path
+path=(
+    ~/.local/bin
+    ~/.local/scripts
+    /usr/local/bin
+    /usr/local/sbin
+    $path[@]
+)
+export PATH
+
+# Add completions path
+fpath=(~/.zsh-plugins/zsh-completions/src $fpath)
+
+# == Environment Variables ==
+export EDITOR='nvim'
+export VISUAL='nvim'
+export BROWSER='firefox'
+export PAGER='less'
+
+# fzf configuration
+export FZF_DEFAULT_OPTS='--layout=reverse --height=40%'
+if command -v fd > /dev/null 2>&1; then
+    export FZF_CTRL_T_COMMAND='fd --type f --hidden --exclude .git --exclude .cache'
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+fi
+
+# XDG directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+
+# == FreeBSD Specific ==
+# Enable color output for ls on FreeBSD
+export CLICOLOR=1
+export LSCOLORS='ExGxFxdaCxDaDahbadacec'
+
+# Set terminal type
+export TERM='xterm-256color'
+
+# == Load local configuration if exists ==
+if [ -f "$HOME/.zshrc.local" ]; then
+    source "$HOME/.zshrc.local"
+fi

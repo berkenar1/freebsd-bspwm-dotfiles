@@ -1,0 +1,14 @@
+# FreeBSD compatible .zprofile
+# This file is sourced on login shells
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+
+# Start X if on tty1 and X is not running
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/ttyv0" ]; then
+    # Check if startx is available
+    if command -v startx > /dev/null 2>&1; then
+        exec startx
+    fi
+fi
