@@ -34,6 +34,20 @@ BACKUP_DIR="$HOME/dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 INSTALL_PACKAGES=true
 CREATE_BACKUP=true
 
+# Component selection flags (enable/disable per-component)
+INSTALL_WM=true       # other WM components (polybar, picom, rofi, etc.)
+INSTALL_BSPWM=true    # bspwm config
+INSTALL_SXHKD=true    # sxhkd keybindings
+INSTALL_NVIM=false    # NeoVim configuration (disabled by default)
+INSTALL_ZSH=false     # ZSH and plugins (disabled by default)
+INSTALL_AUDIO=true    # PipeWire and audio config
+
+# Preserve existing user configurations by default (do not overwrite)
+PRESERVE_EXISTING=true
+
+# Interactive selection mode
+INTERACTIVE_SELECTION=false
+
 # Parse arguments
 for arg in "$@"; do
     case "$arg" in
@@ -43,15 +57,49 @@ for arg in "$@"; do
         --no-backup)
             CREATE_BACKUP=false
             ;;
+        --no-wm)
+            INSTALL_WM=false
+            ;;
+        --no-bspwm)
+            INSTALL_BSPWM=false
+            ;;
+        --no-sxhkd)
+            INSTALL_SXHKD=false
+            ;;
+        --no-nvim)
+            INSTALL_NVIM=false
+            ;;
+        --no-zsh)
+            INSTALL_ZSH=false
+            ;;
+        --no-audio)
+            INSTALL_AUDIO=false
+            ;;
+        --no-preserve)
+            PRESERVE_EXISTING=false
+            ;;
+        --select)
+            INTERACTIVE_SELECTION=true
+            ;;
         --help|-h)
             echo "FreeBSD BSPWM Dotfiles Installer"
             echo ""
             echo "Usage: $0 [options]"
             echo ""
             echo "Options:"
-            echo "  --no-packages  Skip package installation"
-            echo "  --no-backup    Skip backing up existing configurations"
-            echo "  -h, --help     Show this help message"
+            echo "  --no-packages      Skip package installation"
+            echo "  --no-backup        Skip backing up existing configurations"
+            echo "  --no-wm            Skip other window manager configs (polybar, picom, rofi, etc.)"
+            echo "  --no-bspwm         Skip bspwm configuration"
+            echo "  --no-sxhkd         Skip sxhkd keybindings"
+            echo "  --no-nvim          Skip NeoVim config installation"
+            echo "  --no-zsh           Skip ZSH config and plugin installation"
+            echo "  --no-audio         Skip audio (PipeWire) configuration and packages"
+            echo "  --no-preserve      Do not preserve existing configs; allow overwriting targets"
+            echo "  --select           Interactively select which components to install"
+            echo "  -h, --help         Show this help message"
+            echo ""
+            echo "Note: By default this installer will not install ZSH or NeoVim and will preserve existing configs. Use --select to enable components, or pass --no-preserve to allow overwriting."
             exit 0
             ;;
         *)
@@ -100,9 +148,13 @@ check_permissions() {
 }
 
 # Required packages for FreeBSD
-# Core packages
-CORE_PACKAGES="
+# Xorg base
+XORG_PACKAGES="
 xorg
+"
+
+# Window manager / WM-related packages
+WM_PACKAGES="
 bspwm
 sxhkd
 polybar
@@ -113,7 +165,12 @@ feh
 hsetroot
 "
 
-# Terminal and shell
+# NeoVim
+NVIM_PACKAGES="
+neovim
+"
+
+# Terminal and shell (zsh-related)
 SHELL_PACKAGES="
 alacritty
 zsh
@@ -135,13 +192,13 @@ playerctl
 # Utilities
 UTIL_PACKAGES="
 neofetch
-neovim
 mpd
 ncmpcpp
 mpv
 zathura
 zathura-pdf-poppler
 conky
+vnstat
 lf
 fzf
 fd-find
@@ -150,11 +207,10 @@ exa
 xautolock
 xdotool
 xclip
-xsel
+xsel-conrad
 scrot
 i3lock
 "
-
 # DE-like utilities (optional but recommended)
 DE_PACKAGES="
 lxpolkit
@@ -190,25 +246,89 @@ install_packages() {
     log_info "Updating pkg repository..."
     pkg update -f
 
-    log_info "Installing core packages..."
-    for pkg in $CORE_PACKAGES; do
-        if pkg info -e "$pkg" > /dev/null 2>&1; then
-            log_info "Package already installed: $pkg"
-        else
-            log_info "Installing: $pkg"
-            pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
-        fi
-    done
+    # Always install Xorg base
+    if [ -n "$XORG_PACKAGES" ]; then
+        log_info "Installing Xorg packages..."
+        for pkg in $XORG_PACKAGES; do
+            if pkg info -e "$pkg" > /dev/null 2>&1; then
+                log_info "Package already installed: $pkg"
+            else
+                log_info "Installing: $pkg"
+                pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
+            fi
+        done
+    fi
 
-    log_info "Installing shell packages..."
-    for pkg in $SHELL_PACKAGES; do
-        if pkg info -e "$pkg" > /dev/null 2>&1; then
-            log_info "Package already installed: $pkg"
-        else
-            log_info "Installing: $pkg"
-            pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
-        fi
-    done
+    # Window manager packages (install per component)
+    if [ -n "$WM_PACKAGES" ]; then
+        log_info "Installing window manager packages (per selection)..."
+        for pkg in $WM_PACKAGES; do
+            case "$pkg" in
+                bspwm)
+                    if [ "$INSTALL_BSPWM" = true ]; then
+                        install_pkg="$pkg"
+                    else
+                        log_info "Skipping package: $pkg (--no-bspwm)"
+                        continue
+                    fi
+                    ;;
+                sxhkd)
+                    if [ "$INSTALL_SXHKD" = true ]; then
+                        install_pkg="$pkg"
+                    else
+                        log_info "Skipping package: $pkg (--no-sxhkd)"
+                        continue
+                    fi
+                    ;;
+                *)
+                    # other WM-related packages follow INSTALL_WM
+                    if [ "$INSTALL_WM" = true ]; then
+                        install_pkg="$pkg"
+                    else
+                        log_info "Skipping package: $pkg (--no-wm)"
+                        continue
+                    fi
+                    ;;
+            esac
+
+            if pkg info -e "$install_pkg" > /dev/null 2>&1; then
+                log_info "Package already installed: $install_pkg"
+            else
+                log_info "Installing: $install_pkg"
+                pkg install -y "$install_pkg" || log_warning "Failed to install: $install_pkg"
+            fi
+        done
+    fi
+
+    # NeoVim
+    if [ "$INSTALL_NVIM" = true ] && [ -n "$NVIM_PACKAGES" ]; then
+        log_info "Installing NeoVim..."
+        for pkg in $NVIM_PACKAGES; do
+            if pkg info -e "$pkg" > /dev/null 2>&1; then
+                log_info "Package already installed: $pkg"
+            else
+                log_info "Installing: $pkg"
+                pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
+            fi
+        done
+    else
+        log_info "Skipping NeoVim packages (disabled)"
+    fi
+
+    # Shell packages (zsh)
+    if [ "$INSTALL_ZSH" = true ] && [ -n "$SHELL_PACKAGES" ]; then
+        log_info "Installing shell packages..."
+        for pkg in $SHELL_PACKAGES; do
+            if pkg info -e "$pkg" > /dev/null 2>&1; then
+                log_info "Package already installed: $pkg"
+            else
+                log_info "Installing: $pkg"
+                pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
+            fi
+        done
+    else
+        log_info "Skipping shell packages (--no-zsh)"
+    fi
 
     log_info "Installing utility packages..."
     for pkg in $UTIL_PACKAGES; do
@@ -230,15 +350,20 @@ install_packages() {
         fi
     done
 
-    log_info "Installing audio packages (PipeWire)..."
-    for pkg in $AUDIO_PACKAGES; do
-        if pkg info -e "$pkg" > /dev/null 2>&1; then
-            log_info "Package already installed: $pkg"
-        else
-            log_info "Installing: $pkg"
-            pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
-        fi
-    done
+    # Audio packages
+    if [ "$INSTALL_AUDIO" = true ]; then
+        log_info "Installing audio packages (PipeWire)..."
+        for pkg in $AUDIO_PACKAGES; do
+            if pkg info -e "$pkg" > /dev/null 2>&1; then
+                log_info "Package already installed: $pkg"
+            else
+                log_info "Installing: $pkg"
+                pkg install -y "$pkg" || log_warning "Failed to install: $pkg"
+            fi
+        done
+    else
+        log_info "Skipping audio packages (--no-audio)"
+    fi
 
     log_info "Installing DE-like utility packages..."
     for pkg in $DE_PACKAGES; do
@@ -253,6 +378,55 @@ install_packages() {
     log_success "Package installation complete!"
 }
 
+# Interactive component selection helper
+select_components() {
+    log_info "Interactive selection: choose components to install (y/n)"
+
+    printf "Install bspwm configuration? [Y/n]: "
+    read -r res
+    case "$res" in
+        n|N) INSTALL_BSPWM=false ;;
+        *) INSTALL_BSPWM=true ;;
+    esac
+
+    printf "Install sxhkd keybindings? [Y/n]: "
+    read -r res
+    case "$res" in
+        n|N) INSTALL_SXHKD=false ;;
+        *) INSTALL_SXHKD=true ;;
+    esac
+
+    printf "Install other WM components (polybar, picom, rofi, dunst)? [Y/n]: "
+    read -r res
+    case "$res" in
+        n|N) INSTALL_WM=false ;;
+        *) INSTALL_WM=true ;;
+    esac
+
+    printf "Install NeoVim configuration? [Y/n]: "
+    read -r res
+    case "$res" in
+        n|N) INSTALL_NVIM=false ;;
+        *) INSTALL_NVIM=true ;;
+    esac
+
+    printf "Install ZSH configuration and plugins? [Y/n]: "
+    read -r res
+    case "$res" in
+        n|N) INSTALL_ZSH=false ;;
+        *) INSTALL_ZSH=true ;;
+    esac
+
+    printf "Install audio configuration (PipeWire)? [Y/n]: "
+    read -r res
+    case "$res" in
+        n|N) INSTALL_AUDIO=false ;;
+        *) INSTALL_AUDIO=true ;;
+    esac
+
+    log_info "Selection: WM=$INSTALL_WM NVIM=$INSTALL_NVIM ZSH=$INSTALL_ZSH AUDIO=$INSTALL_AUDIO"
+}
+
 backup_configs() {
     if [ "$CREATE_BACKUP" = false ]; then
         log_info "Skipping backup (--no-backup flag set)"
@@ -264,12 +438,13 @@ backup_configs() {
     mkdir -p "$BACKUP_DIR/.config"
     mkdir -p "$BACKUP_DIR/zsh"
 
-    # Backup .config directories
-    for config_dir in "$DOTFILES_DIR/.config"/*; do
+    # Backup .config directories (include hidden entries)
+    for config_dir in "$DOTFILES_DIR/.config"/* "$DOTFILES_DIR/.config"/.[!.]* "$DOTFILES_DIR/.config"/..?*; do
+        [ -e "$config_dir" ] || continue
         config_name=$(basename "$config_dir")
         if [ -e "$XDG_CONFIG_HOME/$config_name" ]; then
             log_info "Backing up: $XDG_CONFIG_HOME/$config_name"
-            cp -r "$XDG_CONFIG_HOME/$config_name" "$BACKUP_DIR/.config/" 2>/dev/null || true
+            cp -Rp "$XDG_CONFIG_HOME/$config_name" "$BACKUP_DIR/.config/" 2>/dev/null || true
         fi
     done
 
@@ -316,73 +491,131 @@ create_directories() {
 install_dotfiles() {
     log_info "Installing dotfiles..."
 
-    # Install .config directories
-    for config_dir in "$DOTFILES_DIR/.config"/*; do
-        if [ -d "$config_dir" ]; then
-            config_name=$(basename "$config_dir")
-            dest="$XDG_CONFIG_HOME/$config_name"
-            
-            # Remove existing symlink or directory
-            if [ -L "$dest" ]; then
-                rm "$dest"
-            elif [ -d "$dest" ]; then
-                rm -rf "$dest"
-            fi
-            
-            log_info "Installing config: $config_name"
-            cp -r "$config_dir" "$dest"
-        elif [ -f "$config_dir" ]; then
-            # Handle individual files in .config (like redshift.conf)
-            config_name=$(basename "$config_dir")
-            dest="$XDG_CONFIG_HOME/$config_name"
-            
-            if [ -L "$dest" ] || [ -f "$dest" ]; then
-                rm "$dest"
-            fi
-            
-            log_info "Installing config file: $config_name"
-            cp "$config_dir" "$dest"
-        fi
-    done
+    # Ensure the destination exists
+    mkdir -p "$XDG_CONFIG_HOME"
 
-    # Install FreeBSD-specific configurations
-    log_info "Installing FreeBSD-specific configurations..."
-    
-    # bspwm FreeBSD config
+    # Copy entire .config tree (preserve attributes, copy hidden files)
+    if [ -d "$DOTFILES_DIR/.config" ]; then
+        # If all components are enabled, do a fast full copy
+        if [ "$INSTALL_WM" = true ] && [ "$INSTALL_NVIM" = true ] && [ "$INSTALL_ZSH" = true ] && [ "$INSTALL_AUDIO" = true ]; then
+            log_info "Copying all files from $DOTFILES_DIR/.config to $XDG_CONFIG_HOME"
+            if cp -Rp "$DOTFILES_DIR/.config/." "$XDG_CONFIG_HOME/" 2>/dev/null; then
+                log_success "All .config files copied to $XDG_CONFIG_HOME"
+            else
+                log_warning "cp -Rp failed for some files; falling back to per-entry copy"
+            fi
+        fi
+
+        # Per-entry copy (used if any component is disabled or full copy failed)
+        for entry in "$DOTFILES_DIR/.config"/* "$DOTFILES_DIR/.config"/.[!.]* "$DOTFILES_DIR/.config"/..?*; do
+            [ -e "$entry" ] || continue
+            entry_name=$(basename "$entry")
+
+            case "$entry_name" in
+                bspwm)
+                    if [ "$INSTALL_BSPWM" = true ]; then
+                        log_info "Installing bspwm config: $entry_name"
+                        rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
+                        cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                    else
+                        log_info "Skipping bspwm config: $entry_name"
+                    fi
+                    ;;
+                sxhkd)
+                    if [ "$INSTALL_SXHKD" = true ]; then
+                        log_info "Installing sxhkd config: $entry_name"
+                        rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
+                        cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                    else
+                        log_info "Skipping sxhkd config: $entry_name"
+                    fi
+                    ;;
+                polybar|picom|rofi|dunst|sx)
+                    if [ "$INSTALL_WM" = true ]; then
+                        log_info "Installing WM config: $entry_name"
+                        rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
+                        cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                    else
+                        log_info "Skipping WM config: $entry_name"
+                    fi
+                    ;;
+                nvim)
+                    if [ "$INSTALL_NVIM" = true ]; then
+                        if [ -d "$XDG_CONFIG_HOME/$entry_name" ] && [ "$PRESERVE_EXISTING" = true ]; then
+                            log_info "Preserving existing NeoVim config: $XDG_CONFIG_HOME/$entry_name"
+                        else
+                            log_info "Installing NeoVim config: $entry_name"
+                            rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
+                            cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                        fi
+                    else
+                        log_info "Skipping NeoVim config: $entry_name"
+                    fi
+                    ;;
+                pipewire|wireplumber)
+                    if [ "$INSTALL_AUDIO" = true ]; then
+                        log_info "Installing audio config: $entry_name"
+                        rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
+                        cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                    else
+                        log_info "Skipping audio config: $entry_name"
+                    fi
+                    ;;
+                *)
+                    # Copy other configs by default
+                    log_info "Installing config: $entry_name"
+                    rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
+                    cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                    ;;
+            esac
+        done
+    else
+        log_warning ".config directory not found in dotfiles; nothing to copy"
+    fi
+
+    # Apply FreeBSD-specific overrides (ensure target dirs exist)
     if [ -f "$DOTFILES_DIR/.config/bspwm/bspwmrc.freebsd" ]; then
+        mkdir -p "$XDG_CONFIG_HOME/bspwm"
         cp "$DOTFILES_DIR/.config/bspwm/bspwmrc.freebsd" "$XDG_CONFIG_HOME/bspwm/bspwmrc"
         chmod +x "$XDG_CONFIG_HOME/bspwm/bspwmrc"
+        log_info "Applied FreeBSD override: bspwmrc"
     fi
-    
+
     if [ -f "$DOTFILES_DIR/.config/bspwm/autostart.freebsd" ]; then
+        mkdir -p "$XDG_CONFIG_HOME/bspwm"
         cp "$DOTFILES_DIR/.config/bspwm/autostart.freebsd" "$XDG_CONFIG_HOME/bspwm/autostart"
         chmod +x "$XDG_CONFIG_HOME/bspwm/autostart"
+        log_info "Applied FreeBSD override: autostart"
     fi
-    
-    # sxhkd FreeBSD config
+
     if [ -f "$DOTFILES_DIR/.config/sxhkd/sxhkdrc.freebsd" ]; then
+        mkdir -p "$XDG_CONFIG_HOME/sxhkd"
         cp "$DOTFILES_DIR/.config/sxhkd/sxhkdrc.freebsd" "$XDG_CONFIG_HOME/sxhkd/sxhkdrc"
+        log_info "Applied FreeBSD override: sxhkdrc"
     fi
-    
-    # polybar FreeBSD launch script
+
     if [ -f "$DOTFILES_DIR/.config/polybar/launch-freebsd.sh" ]; then
+        mkdir -p "$XDG_CONFIG_HOME/polybar"
         cp "$DOTFILES_DIR/.config/polybar/launch-freebsd.sh" "$XDG_CONFIG_HOME/polybar/launch.sh"
         chmod +x "$XDG_CONFIG_HOME/polybar/launch.sh"
+        log_info "Applied FreeBSD override: polybar launch"
     fi
-    
-    # picom FreeBSD config
+
     if [ -f "$DOTFILES_DIR/.config/picom/picom-freebsd.conf" ]; then
+        mkdir -p "$XDG_CONFIG_HOME/picom"
         cp "$DOTFILES_DIR/.config/picom/picom-freebsd.conf" "$XDG_CONFIG_HOME/picom/picom.conf"
+        log_info "Applied FreeBSD override: picom.conf"
     fi
 
     # Install fonts
     if [ -d "$DOTFILES_DIR/.fonts" ]; then
         log_info "Installing fonts..."
+        mkdir -p "$HOME/.fonts"
         for font in "$DOTFILES_DIR/.fonts"/*; do
-            font_name=$(basename "$font")
-            cp "$font" "$HOME/.fonts/" 2>/dev/null || true
+            [ -e "$font" ] || continue
+            cp -Rp "$font" "$HOME/.fonts/" 2>/dev/null || true
         done
-        # Update font cache
+        # Update font cache if available
         if command -v fc-cache > /dev/null 2>&1; then
             log_info "Updating font cache..."
             fc-cache -f "$HOME/.fonts" || log_warning "Font cache update failed - fonts may not display correctly"
@@ -456,45 +689,69 @@ install_zsh_config() {
             file_name=$(basename "$zsh_file")
             case "$file_name" in
                 .zsh-plugins)
-                    # Copy plugins directory
+                    # Copy plugins directory if not present or overwriting allowed
                     if [ -d "$zsh_file" ]; then
-                        log_info "Installing zsh plugins..."
-                        cp -r "$zsh_file" "$HOME/"
+                        if [ -d "$HOME/.zsh-plugins" ] && [ "$PRESERVE_EXISTING" = true ]; then
+                            log_info "Preserving existing: $HOME/.zsh-plugins"
+                        else
+                            log_info "Installing zsh plugins..."
+                            cp -r "$zsh_file" "$HOME/"
+                        fi
                     fi
                     ;;
                 .*)
-                    log_info "Installing: $file_name"
-                    cp "$zsh_file" "$HOME/$file_name"
+                    if [ -f "$HOME/$file_name" ] && [ "$PRESERVE_EXISTING" = true ]; then
+                        log_info "Preserving existing: $HOME/$file_name"
+                    else
+                        log_info "Installing: $file_name"
+                        cp "$zsh_file" "$HOME/$file_name"
+                    fi
                     ;;
             esac
         fi
     done
 
-    # Handle .zsh-plugins directory
+    # Handle .zsh-plugins directory (legacy handling)
     if [ -d "$DOTFILES_DIR/zsh/.zsh-plugins" ]; then
-        log_info "Installing zsh plugins..."
-        if [ -d "$HOME/.zsh-plugins" ]; then
-            rm -rf "$HOME/.zsh-plugins"
+        if [ -d "$HOME/.zsh-plugins" ] && [ "$PRESERVE_EXISTING" = true ]; then
+            log_info "Preserving existing: $HOME/.zsh-plugins"
+        else
+            log_info "Installing zsh plugins..."
+            if [ -d "$HOME/.zsh-plugins" ]; then
+                rm -rf "$HOME/.zsh-plugins"
+            fi
+            cp -r "$DOTFILES_DIR/zsh/.zsh-plugins" "$HOME/"
         fi
-        cp -r "$DOTFILES_DIR/zsh/.zsh-plugins" "$HOME/"
     fi
     
     # Install FreeBSD-specific zsh configuration
     log_info "Installing FreeBSD-specific ZSH configuration..."
     
     if [ -f "$DOTFILES_DIR/zsh/.zshrc.freebsd" ]; then
-        cp "$DOTFILES_DIR/zsh/.zshrc.freebsd" "$HOME/.zshrc"
+        if [ -f "$HOME/.zshrc" ] && [ "$PRESERVE_EXISTING" = true ]; then
+            log_info "Preserving existing: $HOME/.zshrc"
+        else
+            cp "$DOTFILES_DIR/zsh/.zshrc.freebsd" "$HOME/.zshrc"
+        fi
     fi
     
     if [ -f "$DOTFILES_DIR/zsh/.zprofile.freebsd" ]; then
-        cp "$DOTFILES_DIR/zsh/.zprofile.freebsd" "$HOME/.zprofile"
+        if [ -f "$HOME/.zprofile" ] && [ "$PRESERVE_EXISTING" = true ]; then
+            log_info "Preserving existing: $HOME/.zprofile"
+        else
+            cp "$DOTFILES_DIR/zsh/.zprofile.freebsd" "$HOME/.zprofile"
+        fi
     fi
     
-    # Run zsh plugins installer if git is available
+    # Run zsh plugins installer if git is available and not preserving existing plugins
     if command -v git > /dev/null 2>&1; then
         if [ -x "$DOTFILES_DIR/install-zsh-plugins.sh" ]; then
-            log_info "Installing ZSH plugins from git..."
-            sh "$DOTFILES_DIR/install-zsh-plugins.sh" || log_warning "Some ZSH plugins may not have installed correctly"
+            if [ "$PRESERVE_EXISTING" = true ]; then
+                log_info "Skipping plugin installer to avoid modifying existing plugins (use --no-preserve to override)"
+            else
+                log_info "Installing ZSH plugins from git..."
+                sh "$DOTFILES_DIR/install-zsh-plugins.sh" || log_warning "Some ZSH plugins may not have installed correctly"
+            fi
         fi
     else
         log_warning "Git not found. ZSH plugins will not be installed from git."
@@ -609,6 +866,18 @@ make_scripts_executable() {
         log_info "  Made executable: .xinitrc"
     fi
 
+    # Ensure script-like files are executable (detect shebang)
+    log_info "Ensuring script-like files are executable (shebang detection)..."
+    # Find files under config and ~/.local/scripts and add +x if the first line is a shebang
+    find "$XDG_CONFIG_HOME" "$HOME/.local/scripts" -type f 2>/dev/null | while IFS= read -r f; do
+        if head -n 1 "$f" 2>/dev/null | grep -E '^#!' >/dev/null 2>&1; then
+            chmod +x "$f" 2>/dev/null || true
+            # Log relative path for readability
+            rel=${f#$HOME/}
+            log_info "  Made executable: $rel"
+        fi
+    done
+
     log_success "Scripts are now executable!"
 }
 
@@ -669,7 +938,12 @@ main() {
 
     check_freebsd
     check_permissions
-    
+
+    # If interactive selection was requested, prompt now
+    if [ "$INTERACTIVE_SELECTION" = true ]; then
+        select_components
+    fi
+
     log_info "Starting installation..."
     log_info "Dotfiles directory: $DOTFILES_DIR"
     log_info "Config directory: $XDG_CONFIG_HOME"
@@ -679,7 +953,11 @@ main() {
     backup_configs
     create_directories
     install_dotfiles
-    install_zsh_config
+    if [ "$INSTALL_ZSH" = true ]; then
+        install_zsh_config
+    else
+        log_info "Skipping ZSH configuration (disabled)"
+    fi
     setup_xinitrc
     make_scripts_executable
     print_post_install
