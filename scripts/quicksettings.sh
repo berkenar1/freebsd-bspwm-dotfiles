@@ -177,12 +177,33 @@ power_settings() {
 
 # System info
 system_info() {
-    info="System: $(uname -sr)
-Hostname: $(hostname)
-Uptime: $(uptime -p 2>/dev/null || uptime | awk -F'up ' '{print $2}' | awk -F',' '{print $1}')
-CPU: $(grep 'model name' /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 || sysctl -n hw.model 2>/dev/null)
-Memory: $(free -h 2>/dev/null | awk '/^Mem:/ {print $3 "/" $2}' || echo "$(sysctl -n hw.physmem 2>/dev/null | awk '{print $1/1024/1024/1024 \"G\"}')")
-Disk: $(df -h / | awk 'NR==2 {print $3 "/" $2 " (" $5 " used)"}')"
+    # Get system information with proper fallbacks for FreeBSD
+    sys_name=$(uname -sr)
+    host_name=$(hostname)
+    uptime_info=$(uptime -p 2>/dev/null || uptime | awk -F'up ' '{print $2}' | awk -F',' '{print $1}')
+    cpu_info=$(sysctl -n hw.model 2>/dev/null || grep 'model name' /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2)
+    
+    # Memory info - FreeBSD first, then Linux fallback
+    if command -v sysctl > /dev/null 2>&1 && [ "$(uname)" = "FreeBSD" ]; then
+        physmem=$(sysctl -n hw.physmem 2>/dev/null)
+        if [ -n "$physmem" ]; then
+            mem_gb=$(echo "$physmem" | awk '{printf "%.1fG", $1/1024/1024/1024}')
+            mem_info="$mem_gb total"
+        else
+            mem_info="Unknown"
+        fi
+    else
+        mem_info=$(free -h 2>/dev/null | awk '/^Mem:/ {print $3 "/" $2}')
+    fi
+    
+    disk_info=$(df -h / | awk 'NR==2 {print $3 "/" $2 " (" $5 " used)"}')
+    
+    info="System: $sys_name
+Hostname: $host_name
+Uptime: $uptime_info
+CPU: $cpu_info
+Memory: $mem_info
+Disk: $disk_info"
 
     echo "$info" | rofi -dmenu -p "System Info" > /dev/null
     

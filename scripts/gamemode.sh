@@ -45,8 +45,11 @@ gamemode_on() {
     
     # Set performance mode if available (FreeBSD)
     if [ "$(uname)" = "FreeBSD" ]; then
-        sysctl dev.cpu.0.freq_levels > /dev/null 2>&1 && \
-            sudo sysctl dev.cpu.0.freq=999999 2>/dev/null
+        # Get the maximum available frequency and set it
+        max_freq=$(sysctl -n dev.cpu.0.freq_levels 2>/dev/null | awk -F'/' '{print $1}' | head -1)
+        if [ -n "$max_freq" ]; then
+            sudo sysctl dev.cpu.0.freq="$max_freq" 2>/dev/null
+        fi
     fi
     
     # Disable animations in bspwm (set faster response)

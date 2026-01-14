@@ -88,8 +88,17 @@ random_wallpaper() {
         return 1
     fi
     
-    # Find random image
-    random_image=$(find "$WALLPAPER_DIR" -maxdepth 2 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) 2>/dev/null | shuf -n 1)
+    # Find random image using a more efficient method
+    # Count files first, then select random index
+    image_count=$(find "$WALLPAPER_DIR" -maxdepth 2 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) 2>/dev/null | wc -l)
+    
+    if [ "$image_count" -eq 0 ]; then
+        notify-send "Error" "No wallpapers found in $WALLPAPER_DIR"
+        return 1
+    fi
+    
+    # Use awk for random selection (more portable than shuf)
+    random_image=$(find "$WALLPAPER_DIR" -maxdepth 2 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) 2>/dev/null | awk -v seed="$RANDOM" 'BEGIN{srand(seed)} {a[NR]=$0} END{print a[int(rand()*NR)+1]}')
     
     if [ -n "$random_image" ]; then
         set_wallpaper "$random_image"

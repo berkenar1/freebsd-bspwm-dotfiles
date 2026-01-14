@@ -240,10 +240,8 @@ make_scripts_executable() {
         [ -f "$XDG_CONFIG_HOME/bspwm/autostart" ] && chmod +x "$XDG_CONFIG_HOME/bspwm/autostart"
     fi
 
-    # sxhkd config
-    if [ -f "$XDG_CONFIG_HOME/sxhkd/sxhkdrc" ]; then
-        chmod +x "$XDG_CONFIG_HOME/sxhkd/sxhkdrc"
-    fi
+    # sxhkd config (not executable - it's a config file, not a script)
+    # Note: sxhkdrc is read by sxhkd, doesn't need execute permission
 
     # polybar scripts
     if [ -d "$XDG_CONFIG_HOME/polybar" ]; then

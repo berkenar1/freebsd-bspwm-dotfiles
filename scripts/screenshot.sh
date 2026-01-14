@@ -88,7 +88,7 @@ take_screenshot() {
             ;;
         edit)
             # Take area screenshot and open in editor
-            TMP_FILE="/tmp/screenshot-edit-${TIMESTAMP}.png"
+            TMP_FILE=$(mktemp /tmp/screenshot-edit-XXXXXX.png)
             if command -v maim > /dev/null 2>&1; then
                 maim -s "$TMP_FILE"
             elif command -v scrot > /dev/null 2>&1; then

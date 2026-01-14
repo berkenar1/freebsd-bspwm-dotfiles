@@ -42,8 +42,8 @@ get_volume() {
     elif command -v amixer > /dev/null 2>&1; then
         amixer sget Master | grep -oP '\d+%' | head -1 | tr -d '%'
     elif command -v mixer > /dev/null 2>&1; then
-        # FreeBSD mixer
-        mixer vol | awk -F: '{print $2}' | tr -d ' ' | cut -d: -f1
+        # FreeBSD mixer - output format is "vol:left:right" or similar
+        mixer vol 2>/dev/null | awk '{gsub(/[^0-9:]/, ""); split($0, a, ":"); print a[2]}' | head -1
     else
         echo "0"
     fi
