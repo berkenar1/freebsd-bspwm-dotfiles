@@ -212,13 +212,14 @@ scrot
 i3lock
 "
 # DE-like utilities (optional but recommended)
+# Note: some packages like 'lxpolkit', 'blueman', and 'udiskie' may not exist
+# in FreeBSD pkg repositories; prefer available alternatives when possible.
 DE_PACKAGES="
-lxpolkit
+polkit-gnome
 pcmanfm
 arandr
 pavucontrol
-blueman
-udiskie
+libudisks
 redshift
 nitrogen
 clipmenu
