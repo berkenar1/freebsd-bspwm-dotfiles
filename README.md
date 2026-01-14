@@ -241,7 +241,12 @@ sh symlink.sh
 | `Super + l` | Lock screen |
 | `Super + Escape` | Reload sxhkd |
 | `Super + Shift + Escape` | Reload polybar |
-| `Super + Alt + r` | Restart bspwm |
+| `Super + Ctrl + C` | Toggle caffeine mode (prevent auto-sleep / auto-lock) |
+
+
+### Caffeine mode
+- Prevents the system from auto-suspending and disables auto-lock while enabled.
+- Toggle with `Super + Ctrl + C` or run `~/.local/bin/caffeine toggle`.  Check status with `~/.local/bin/caffeine status`.| `Super + Alt + r` | Restart bspwm |
 | `Super + Alt + q` | Quit bspwm |
 
 ### Media Controls

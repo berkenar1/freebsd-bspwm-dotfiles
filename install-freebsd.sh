@@ -707,6 +707,14 @@ install_dotfiles() {
             fi
         done
         log_success "Scripts installed to ~/.local/scripts"
+
+        # Create convenience symlink in ~/.local/bin for scripts that should be on PATH
+        if [ -f "$HOME/.local/scripts/caffeine.sh" ]; then
+            mkdir -p "$HOME/.local/bin"
+            ln -sf "$HOME/.local/scripts/caffeine.sh" "$HOME/.local/bin/caffeine"
+            chmod +x "$HOME/.local/scripts/caffeine.sh" || true
+            log_info "Created convenience symlink: ~/.local/bin/caffeine -> ~/.local/scripts/caffeine.sh"
+        fi
     fi
 
     # Install FreeBSD-specific PipeWire configuration
@@ -974,6 +982,11 @@ print_post_install() {
         echo ""
     fi
     echo "Enjoy your new bspwm setup on FreeBSD!"
+    echo ""
+    echo "Caffeine mode: prevent auto-suspend and auto-lock"
+    echo "  Toggle with keybinding: Super+Ctrl+C"
+    echo "  Or run: ~/.local/bin/caffeine toggle"
+    echo "  Status: ~/.local/bin/caffeine status"
     echo ""
 }
 
