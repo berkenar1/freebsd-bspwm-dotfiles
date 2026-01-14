@@ -153,10 +153,18 @@ alias pkg-autoremove='sudo pkg autoremove'
 alias ports-update='sudo portsnap fetch update'
 alias service-list='service -l'
 alias service-status='service -e'
+alias freebsd-update='sudo freebsd-update fetch install'
+alias kldstat='kldstat'  # Show loaded kernel modules
 
-# Network
+# Network (FreeBSD specific)
 alias myip='curl -s ifconfig.me'
 alias netstat-listen='sockstat -4 -l'
+alias ifstat='netstat -I'  # Interface statistics
+
+# FreeBSD system info
+alias cpu-temp='sysctl -a | grep temperature'
+alias hw-info='sysctl hw'
+alias kern-info='sysctl kern.ostype kern.osrelease kern.version'
 
 # Quick edit configs
 alias zshrc='${EDITOR:-vim} ~/.zshrc'

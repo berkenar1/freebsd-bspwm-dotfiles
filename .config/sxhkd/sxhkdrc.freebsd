@@ -158,8 +158,9 @@ super + alt + shift + {Left, Down, Up, Right}
 ###################################
 
 # Volume Control (using mixer on FreeBSD)
-# Note: FreeBSD uses 'mixer' instead of 'pamixer'
-# If using pulseaudio, uncomment pamixer lines instead
+# FreeBSD uses OSS (mixer) by default instead of ALSA/PulseAudio
+# mixer: FreeBSD's native audio mixer
+# pamixer: Only works if PulseAudio is installed
 
 XF86AudioLowerVolume
 	mixer vol -5 || pamixer -d 5
@@ -171,12 +172,15 @@ XF86AudioMute
 	mixer vol ^mute || pamixer -t
 
 # Brightness control
-# Note: Install 'backlight' package or use sysctl on FreeBSD
+# FreeBSD options:
+# - backlight(8): pkg install backlight-utils
+# - intel_backlight: For Intel GPUs
+# - sysctl hw.acpi.video.lcd0.brightness: ACPI method
 XF86MonBrightnessDown
-	backlight decr 5 || sysctl hw.acpi.video.lcd0.brightness=$(expr $(sysctl -n hw.acpi.video.lcd0.brightness) - 5)
+	backlight decr 5 || intel_backlight -5 || sysctl hw.acpi.video.lcd0.brightness=$(expr $(sysctl -n hw.acpi.video.lcd0.brightness) - 5)
 
 XF86MonBrightnessUp
-	backlight incr 5 || sysctl hw.acpi.video.lcd0.brightness=$(expr $(sysctl -n hw.acpi.video.lcd0.brightness) + 5)
+	backlight incr 5 || intel_backlight +5 || sysctl hw.acpi.video.lcd0.brightness=$(expr $(sysctl -n hw.acpi.video.lcd0.brightness) + 5)
 
 # Lock screen (using i3lock or xlock)
 super + shift + l

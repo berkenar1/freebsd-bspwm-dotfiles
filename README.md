@@ -82,7 +82,22 @@ sh install-freebsd.sh --help
    startx
    ```
 
-4. **(Optional) Enable display manager** (SLiM):
+4. **(Optional) Enable a display manager**:
+
+   **For SDDM** (recommended):
+   ```sh
+   # Install SDDM
+   sudo pkg install sddm
+   
+   # Install the bspwm session file
+   sudo cp bspwm.desktop /usr/local/share/xsessions/
+   
+   # Enable SDDM in /etc/rc.conf
+   sddm_enable="YES"
+   ```
+   Then select "bspwm" from the session dropdown in SDDM.
+
+   **For SLiM**:
    ```sh
    # Add to /etc/rc.conf
    slim_enable="YES"

@@ -469,23 +469,59 @@ XINITRC
 make_scripts_executable() {
     log_info "Making scripts executable..."
 
-    # bspwm scripts
+    # bspwm scripts (REQUIRED for bspwm to work)
     if [ -d "$XDG_CONFIG_HOME/bspwm" ]; then
-        chmod +x "$XDG_CONFIG_HOME/bspwm/bspwmrc" 2>/dev/null || true
-        chmod +x "$XDG_CONFIG_HOME/bspwm/autostart" 2>/dev/null || true
+        if [ -f "$XDG_CONFIG_HOME/bspwm/bspwmrc" ]; then
+            chmod +x "$XDG_CONFIG_HOME/bspwm/bspwmrc"
+            log_info "  Made executable: bspwmrc"
+        else
+            log_warning "  bspwmrc not found - bspwm may not start correctly!"
+        fi
+        
+        if [ -f "$XDG_CONFIG_HOME/bspwm/autostart" ]; then
+            chmod +x "$XDG_CONFIG_HOME/bspwm/autostart"
+            log_info "  Made executable: autostart"
+        fi
+    else
+        log_warning "  bspwm config directory not found!"
+    fi
+
+    # sxhkd config (REQUIRED for keybindings to work)
+    if [ -d "$XDG_CONFIG_HOME/sxhkd" ]; then
+        if [ -f "$XDG_CONFIG_HOME/sxhkd/sxhkdrc" ]; then
+            chmod +x "$XDG_CONFIG_HOME/sxhkd/sxhkdrc"
+            log_info "  Made executable: sxhkdrc"
+        else
+            log_warning "  sxhkdrc not found - keybindings may not work!"
+        fi
+    else
+        log_warning "  sxhkd config directory not found!"
     fi
 
     # polybar scripts
     if [ -d "$XDG_CONFIG_HOME/polybar" ]; then
-        chmod +x "$XDG_CONFIG_HOME/polybar/launch.sh" 2>/dev/null || true
+        if [ -f "$XDG_CONFIG_HOME/polybar/launch.sh" ]; then
+            chmod +x "$XDG_CONFIG_HOME/polybar/launch.sh"
+            log_info "  Made executable: polybar/launch.sh"
+        fi
         if [ -d "$XDG_CONFIG_HOME/polybar/scripts" ]; then
             chmod +x "$XDG_CONFIG_HOME/polybar/scripts"/* 2>/dev/null || true
+            log_info "  Made executable: polybar/scripts/*"
         fi
     fi
 
     # sx scripts
     if [ -d "$XDG_CONFIG_HOME/sx" ]; then
-        chmod +x "$XDG_CONFIG_HOME/sx/sxrc" 2>/dev/null || true
+        if [ -f "$XDG_CONFIG_HOME/sx/sxrc" ]; then
+            chmod +x "$XDG_CONFIG_HOME/sx/sxrc"
+            log_info "  Made executable: sx/sxrc"
+        fi
+    fi
+
+    # .xinitrc
+    if [ -f "$HOME/.xinitrc" ]; then
+        chmod +x "$HOME/.xinitrc"
+        log_info "  Made executable: .xinitrc"
     fi
 
     log_success "Scripts are now executable!"
@@ -516,9 +552,18 @@ print_post_install() {
     echo "4. Start X11:"
     echo "   startx"
     echo ""
-    echo "5. If using a display manager (SLiM):"
-    echo "   Add to /etc/rc.conf:"
-    echo "     slim_enable=\"YES\""
+    echo "5. If using a display manager:"
+    echo ""
+    echo "   For SDDM:"
+    echo "     sudo pkg install sddm"
+    echo "     sudo cp $DOTFILES_DIR/bspwm.desktop /usr/local/share/xsessions/"
+    echo "     Add to /etc/rc.conf:"
+    echo "       sddm_enable=\"YES\""
+    echo "     Then select 'bspwm' from the session menu in SDDM"
+    echo ""
+    echo "   For SLiM:"
+    echo "     Add to /etc/rc.conf:"
+    echo "       slim_enable=\"YES\""
     echo ""
     if [ "$CREATE_BACKUP" = true ]; then
         echo "Your previous configuration was backed up to:"

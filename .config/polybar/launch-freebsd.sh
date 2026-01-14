@@ -15,8 +15,8 @@ DEFAULT_NETWORK_INTERFACE=$(route -n get default 2>/dev/null | grep interface | 
 
 # Fallback: try to find a wireless or ethernet interface
 if [ -z "$DEFAULT_NETWORK_INTERFACE" ]; then
-    # Try to find wireless interface
-    for iface in wlan0 iwn0 ath0 ral0; do
+    # Try to find wireless interface (FreeBSD common names)
+    for iface in wlan0 wlan1 iwn0 iwm0 ath0 ral0 rum0 run0 urtwn0; do
         if ifconfig "$iface" > /dev/null 2>&1; then
             DEFAULT_NETWORK_INTERFACE="$iface"
             break
@@ -24,9 +24,9 @@ if [ -z "$DEFAULT_NETWORK_INTERFACE" ]; then
     done
 fi
 
-# Fallback to ethernet if no wireless found
+# Fallback to ethernet if no wireless found (FreeBSD common names)
 if [ -z "$DEFAULT_NETWORK_INTERFACE" ]; then
-    for iface in em0 re0 bge0 igb0 ix0; do
+    for iface in em0 em1 igb0 igb1 ix0 ixl0 re0 bge0 bce0 msk0 age0 alc0 ale0 fxp0 dc0 rl0 sis0 sk0 ste0 tl0 tx0 vr0 wb0 xl0; do
         if ifconfig "$iface" > /dev/null 2>&1; then
             DEFAULT_NETWORK_INTERFACE="$iface"
             break
