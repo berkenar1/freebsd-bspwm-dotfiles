@@ -38,7 +38,7 @@ These are bspwm dotfiles that work on both Linux and **FreeBSD**. Originally des
 | Shell                               | [zsh](https://www.zsh.org/)                                                                                                    |
 | Terminal Emulator                   | [Alacritty](https://alacritty.org/) / [st](https://st.suckless.org/)                                                           |
 | Document Viewer                     | [Zathura](https://pwmt.org/projects/zathura/)                                                                                  |
-| Music Player                        | [ncmpcpp/mpd](https://github.com/ncmpcpp/ncmpcpp)                                                                              |
+| Music Player                        | [ncmpcpp](https://github.com/ncmpcpp/ncmpcpp) + [ympd](https://www.ympd.org/) (MPD web client alternative) |
 | GTK Theme                           | [Serenade (Oomox Generated)](https://cdn.discordapp.com/attachments/792698625011482677/813491937041448970/serenade.zip)        |
 | Compositor                          | [picom](https://github.com/yshui/picom)                                                                                        |
 | Notification Daemon                 | [dunst](https://dunst-project.org/)                                                                                            |

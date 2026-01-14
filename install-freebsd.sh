@@ -197,6 +197,7 @@ playerctl
 UTIL_PACKAGES="
 neofetch
 ncmpcpp
+ympd
 mpv
 zathura
 zathura-pdf-poppler
