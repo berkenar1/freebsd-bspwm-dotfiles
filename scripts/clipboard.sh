@@ -22,20 +22,40 @@ show_clipboard() {
         return
     fi
     
-    # Try cliphist (wayland, but also works on X)
+    # Try cliphist (works on Wayland/X)
     if command -v cliphist > /dev/null 2>&1; then
         cliphist list | rofi -dmenu -p "Clipboard" | cliphist decode | xclip -selection clipboard
         return
     fi
+
+    # Wayland clipboard
+    if command -v wl-paste >/dev/null 2>&1; then
+        content=$(wl-paste -n 2>/dev/null)
+        if [ -n "$content" ]; then
+            notify-send "Current Clipboard" "$content"
+        else
+            notify-send "Clipboard" "Clipboard is empty"
+        fi
+        return
+    fi
     
-    # Fallback: show current clipboard content
-    if command -v xclip > /dev/null 2>&1; then
+    # Fallback: show current X11 clipboard content
+    if [ -n "$DISPLAY" ] && command -v xclip > /dev/null 2>&1; then
         content=$(xclip -selection clipboard -o 2>/dev/null)
         if [ -n "$content" ]; then
             notify-send "Current Clipboard" "$content"
         else
             notify-send "Clipboard" "Clipboard is empty"
         fi
+    elif [ -n "$DISPLAY" ] && command -v xsel > /dev/null 2>&1; then
+        content=$(xsel --clipboard -o 2>/dev/null)
+        if [ -n "$content" ]; then
+            notify-send "Current Clipboard" "$content"
+        else
+            notify-send "Clipboard" "Clipboard is empty"
+        fi
+    else
+        notify-send "Clipboard" "No clipboard tool found"
     fi
 }
 
@@ -51,25 +71,41 @@ clear_clipboard() {
         notify-send "Clipboard" "History cleared"
         return
     fi
+
+    # Wayland
+    if command -v wl-copy >/dev/null 2>&1; then
+        echo -n "" | wl-copy
+        notify-send "Clipboard" "Clipboard cleared"
+        return
+    fi
     
-    # Clear current clipboard
-    if command -v xclip > /dev/null 2>&1; then
+    # Clear current X11 clipboard
+    if [ -n "$DISPLAY" ] && command -v xclip > /dev/null 2>&1; then
         echo -n "" | xclip -selection clipboard
         notify-send "Clipboard" "Clipboard cleared"
-    elif command -v xsel > /dev/null 2>&1; then
+    elif [ -n "$DISPLAY" ] && command -v xsel > /dev/null 2>&1; then
         xsel --clipboard --clear
         notify-send "Clipboard" "Clipboard cleared"
+    else
+        notify-send "Clipboard" "No clipboard tool found"
     fi
 }
 
 copy_selection() {
     # Copy primary selection to clipboard
-    if command -v xclip > /dev/null 2>&1; then
+    if command -v wl-paste >/dev/null 2>&1 && command -v wl-copy >/dev/null 2>&1; then
+        wl-paste | wl-copy && notify-send "Clipboard" "Selection copied to clipboard"
+        return
+    fi
+
+    if [ -n "$DISPLAY" ] && command -v xclip > /dev/null 2>&1; then
         xclip -selection primary -o | xclip -selection clipboard
         notify-send "Clipboard" "Selection copied to clipboard"
-    elif command -v xsel > /dev/null 2>&1; then
+    elif [ -n "$DISPLAY" ] && command -v xsel > /dev/null 2>&1; then
         xsel --primary | xsel --clipboard
         notify-send "Clipboard" "Selection copied to clipboard"
+    else
+        notify-send "Clipboard" "No clipboard tool found"
     fi
 }
 

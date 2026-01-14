@@ -38,10 +38,19 @@ notify_screenshot() {
 
 # Copy to clipboard
 copy_to_clipboard() {
-    if command -v xclip > /dev/null 2>&1; then
-        xclip -selection clipboard -t image/png < "$FILEPATH"
-    elif command -v xsel > /dev/null 2>&1; then
-        xsel --clipboard < "$FILEPATH"
+    # Prefer Wayland tools if available
+    if command -v wl-copy >/dev/null 2>&1; then
+        wl-copy < "$FILEPATH" || notify-send "Clipboard" "Failed to copy image to clipboard"
+        return
+    fi
+
+    # X11 clipboard tools (only when DISPLAY is set)
+    if [ -n "$DISPLAY" ] && command -v xclip >/dev/null 2>&1; then
+        xclip -selection clipboard -t image/png < "$FILEPATH" || notify-send "Clipboard" "Failed to copy image to clipboard"
+    elif [ -n "$DISPLAY" ] && command -v xsel >/dev/null 2>&1; then
+        xsel --clipboard < "$FILEPATH" || notify-send "Clipboard" "Failed to copy image to clipboard"
+    else
+        notify-send "Clipboard" "No clipboard tool found (wl-copy, xclip, or xsel)"
     fi
 }
 
