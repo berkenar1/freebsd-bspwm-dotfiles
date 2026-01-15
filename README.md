@@ -227,6 +227,41 @@ sh symlink.sh
 | `Super + .` | Emoji picker |
 | `Super + F12` | Toggle game mode |
 
+### Theme color isolation & testing
+
+To avoid color palettes from multiple themes colliding, the b9k theme's color sets are namespaced and kept separate from the repository's default/global palettes. Changes made for the b9k import:
+
+- Polybar now references a namespaced color file: `~/.config/bspwm/polybar/colors-b9k.ini` (copied from the b9k theme). This prevents other polybar configs that use a different `colors.ini` from being affected.
+- The `not_in_use` polybar configuration was updated to reference `colors-b9k.ini` so it stays self-contained.
+- A verification script was added to check references and basic configuration validity: `scripts/verify-theme-colors.sh` (run this after applying or reverting a theme).
+
+How to test
+
+1. Apply the b9k theme (creates backups under `backups/`):
+
+```sh
+./scripts/theme-b9k.sh apply
+```
+
+2. Run the verification script (this checks that referenced color files exist and performs lightweight checks):
+
+```sh
+./scripts/verify-theme-colors.sh
+```
+
+3. If anything looks wrong, revert to the previous configuration (restores files from the most recent backup):
+
+```sh
+./scripts/theme-b9k.sh revert
+```
+
+Notes
+
+- RoFi, Alacritty, Eww, and Kvantum use their own theme files inside their respective config directories and are left namespaced by design (e.g., `~/.config/rofi/` or `~/.config/alacritty/`).
+- Backups of replaced configurations are kept under `backups/` so the change is reversible.
+
+---
+
 ### Screenshots
 | Shortcut | Action |
 |----------|--------|

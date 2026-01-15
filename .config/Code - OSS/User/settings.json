@@ -1,0 +1,135 @@
+{
+  "security.workspace.trust.untrustedFiles": "open",
+  "editor.fontFamily": "'JetBrainsMono Nerd Font', 'monospace', monospace",
+
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+
+  // Formatting
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.wordWrap": "on",
+  "vim.handleKeys": {
+    "<C-d>": false,
+    "<C-f>": false,
+    "<C-w>": false,
+    "<C-s>": false,
+    "<C-z>": true,
+    "<C-j>": false,
+    "<C-k>": false,
+    "<C-q>": false,
+    "<C-b>": false
+  },
+
+  "vim.easymotion": true,
+  "vim.incsearch": true,
+  "vim.useSystemClipboard": true,
+  "vim.hlsearch": true,
+
+  // custom vim keybinds
+  "vim.normalModeKeyBindings": [
+    {
+      "before": ["<leader>", "c", "w"],
+      "commands": ["editor.action.changeAll"]
+    },
+    {
+      "before": ["<leader>", "f", "w"],
+      "commands": ["workbench.action.findInFiles"]
+    },
+    {
+      "before": ["<leader>", "d"],
+      "after": ["d", "d"]
+    },
+    {
+      "before": ["<tab>"],
+      "commands": ["workbench.action.nextEditor"]
+    },
+    {
+      "before": ["<S-tab>"],
+      "commands": ["workbench.action.previousEditor"]
+    }
+  ],
+  "vim.insertModeKeyBindings": [
+    {
+      "before": ["j", "j"],
+      "after": ["<Esc>"]
+    }
+  ],
+  "vim.normalModeKeyBindingsNonRecursive": [
+    {
+      "before": ["<leader>", "d"],
+      "after": ["d", "d"]
+    },
+    {
+      "before": ["K"],
+      "commands": ["lineBreakInsert"],
+      "silent": true
+    },
+    {
+      "after": ["leader", "leader", "w"],
+      "before": ["s"]
+    },
+    {
+      "after": ["leader", "leader", "b"],
+      "before": ["<S-s>"]
+    }
+  ],
+  "vim.visualModeKeyBindings": [
+    {
+      "before": [">"],
+      "after": [">", "g", "v"]
+    },
+    {
+      "before": ["<"],
+      "after": ["<", "g", "v"]
+    }
+  ],
+  // "vim.leader": "<space>",
+
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // eslint configuration
+  "eslint.options": {
+    "extensions": [".js", ".jsx", ".md", ".mdx", ".ts", ".tsx"]
+  },
+  "eslint.validate": [
+    "markdown",
+    // "mdx",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "workbench.startupEditor": "none",
+  "window.confirmBeforeClose": "always",
+  "workbench.colorTheme": "Material Theme Palenight High Contrast",
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.commandPalette.history": 25,
+  "workbench.localHistory.maxFileEntries": 25,
+  "terminal.integrated.shellIntegration.history": 50,
+  "vim.history": 25,
+  "[mdx]": {},
+  "auto-close-tag.SublimeText3Mode": true,
+  "auto-close-tag.fullMode": true,
+  "window.zoomLevel": 1,
+  "terminal.integrated.persistentSessionReviveProcess": "never",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "eslint.packageManager": "yarn",
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
