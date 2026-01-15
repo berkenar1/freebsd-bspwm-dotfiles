@@ -58,9 +58,22 @@ apply() {
   if [ "$DRY" = false ]; then
     backup_dir=$(do_backup)
     cp -a "$THEME_DIR/." "$TARGET_DIR/"
+
+    # Ensure namespaced polybar color file is installed
+    mkdir -p "$TARGET_DIR/bspwm/polybar"
+    if [ -f "$THEME_DIR/not_in_use/polybar/colors.ini" ]; then
+      cp -f "$THEME_DIR/not_in_use/polybar/colors.ini" "$TARGET_DIR/bspwm/polybar/colors-b9k.ini"
+      echo "Installed namespaced polybar colors: $TARGET_DIR/bspwm/polybar/colors-b9k.ini"
+    elif [ -f "$THEME_DIR/bspwm/polybar/colors-b9k.ini" ]; then
+      cp -f "$THEME_DIR/bspwm/polybar/colors-b9k.ini" "$TARGET_DIR/bspwm/polybar/colors-b9k.ini"
+      echo "Installed namespaced polybar colors: $TARGET_DIR/bspwm/polybar/colors-b9k.ini"
+    else
+      echo "Warning: no polybar colors found in theme to install (expected colors.ini or colors-b9k.ini)"
+    fi
+
     echo "Applied. Backup created at: $backup_dir"
   else
-    echo "Dry run: would backup and copy files from $THEME_DIR to $TARGET_DIR"
+    echo "Dry run: would backup and copy files from $THEME_DIR to $TARGET_DIR and install namespaced polybar colors (colors-b9k.ini)"
   fi
 }
 

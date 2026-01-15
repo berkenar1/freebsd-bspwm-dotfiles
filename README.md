@@ -232,6 +232,8 @@ sh symlink.sh
 To avoid color palettes from multiple themes colliding, the b9k theme's color sets are namespaced and kept separate from the repository's default/global palettes. Changes made for the b9k import:
 
 - Polybar now references a namespaced color file: `~/.config/bspwm/polybar/colors-b9k.ini` (copied from the b9k theme). This prevents other polybar configs that use a different `colors.ini` from being affected.
+
+Note: `./scripts/theme-b9k.sh apply` will explicitly install or update `colors-b9k.ini` into `~/.config/bspwm/polybar/` during apply, ensuring colors are isolated and kept up-to-date.
 - The `not_in_use` polybar configuration was updated to reference `colors-b9k.ini` so it stays self-contained.
 - A verification script was added to check references and basic configuration validity: `scripts/verify-theme-colors.sh` (run this after applying or reverting a theme).
 
