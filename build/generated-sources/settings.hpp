@@ -1,0 +1,76 @@
+#pragma once
+
+#include <cstdio>
+#include <string>
+#include <vector>
+
+extern const char* const APP_NAME;
+extern const char* const APP_VERSION;
+
+#define ENABLE_ALSA 1
+#define ENABLE_MPD 1
+#define ENABLE_NETWORK 0
+#define WITH_LIBNL 0
+#define ENABLE_I3 1
+#define ENABLE_CURL 1
+#define ENABLE_PULSEAUDIO 1
+
+#define WITH_XRANDR 1
+#define WITH_XCOMPOSITE 1
+#define WITH_XKB 1
+#define WITH_XRM 1
+#define WITH_XCURSOR 1
+
+#if WITH_XRANDR
+#define WITH_XRANDR_MONITORS 1
+#else
+#define WITH_XRANDR_MONITORS 0
+#endif
+
+#if WITH_XKB
+#define ENABLE_XKEYBOARD 1
+#else
+#define ENABLE_XKEYBOARD 0
+#endif
+
+#define XPP_EXTENSION_LIST xpp::randr::extension, xpp::composite::extension, xpp::xkb::extension
+
+#define DEBUG_LOGGER
+
+#if DEBUG
+/* #undef DEBUG_LOGGER_VERBOSE */
+/* #undef DEBUG_HINTS */
+/* #undef DEBUG_WHITESPACE */
+/* #undef DEBUG_FONTCONFIG */
+#endif
+
+static const int SIGN_PRIORITY_CONTROLLER{1};
+static const int SIGN_PRIORITY_SCREEN{2};
+static const int SIGN_PRIORITY_BAR{3};
+static const int SIGN_PRIORITY_RENDERER{4};
+static const int SIGN_PRIORITY_TRAY{5};
+
+extern const int SINK_PRIORITY_BAR;
+extern const int SINK_PRIORITY_SCREEN;
+extern const int SINK_PRIORITY_TRAY;
+extern const int SINK_PRIORITY_MODULE;
+
+extern const char* const ALSA_SOUNDCARD;
+extern const char* const BSPWM_SOCKET_PATH;
+extern const char* const BSPWM_STATUS_PREFIX;
+extern const char* const CONNECTION_TEST_IP;
+extern const char* const PATH_ADAPTER;
+extern const char* const PATH_BACKLIGHT;
+extern const char* const PATH_BATTERY;
+extern const char* const PATH_CPU_INFO;
+extern const char* const PATH_MEMORY_INFO;
+extern const char* const PATH_MESSAGING_FIFO;
+extern const char* const PATH_TEMPERATURE_INFO;
+extern const char* const PATH_THERMAL_ZONE_WILDCARD;
+extern const char* const WIRELESS_LIB;
+
+bool version_details(const std::vector<std::string>& args);
+
+void print_build_info(bool extended = false);
+
+// vim:ft=cpp

@@ -1,0 +1,338 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						7,
+						8
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-3ee2932a6965b4611996.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						8,
+						9,
+						13
+					]
+				},
+				{
+					"build" : "doc",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-doc-Debug-219602f7b6531d895eaa.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "doc",
+					"targetIndexes" : 
+					[
+						4,
+						5,
+						6
+					]
+				},
+				{
+					"build" : "contrib/bash",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-contrib.bash-Debug-061079715e6a67a8c872.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "contrib/bash"
+				},
+				{
+					"build" : "contrib/zsh",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-contrib.zsh-Debug-ca595c98335aeec3b396.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "contrib/zsh"
+				},
+				{
+					"build" : "lib",
+					"childIndexes" : 
+					[
+						5,
+						6
+					],
+					"jsonFile" : "directory-lib-Debug-c12f15c6f888b43a891c.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "lib"
+				},
+				{
+					"build" : "lib/xpp",
+					"jsonFile" : "directory-lib.xpp-Debug-e6a43f1033737d82cb12.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 4,
+					"projectIndex" : 1,
+					"source" : "lib/xpp",
+					"targetIndexes" : 
+					[
+						14
+					]
+				},
+				{
+					"build" : "lib/i3ipcpp",
+					"jsonFile" : "directory-lib.i3ipcpp-Debug-08adc1e15db2b220bf66.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 4,
+					"projectIndex" : 2,
+					"source" : "lib/i3ipcpp",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "include",
+					"jsonFile" : "directory-include-Debug-7ead17b99bffc88b66bb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "include"
+				},
+				{
+					"build" : "bin",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-bin-Debug-384a3a57eebbbbd7016b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						10,
+						11,
+						12
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						7,
+						8
+					],
+					"name" : "polybar",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						5
+					],
+					"name" : "xpp",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						14
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						6
+					],
+					"name" : "i3ipc++",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						7
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "clangformat::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-clangformat-Debug-661fa2db08bf27f90d5e.json",
+					"name" : "clangformat",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "clangformat-dryrun::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-clangformat-dryrun-Debug-1ad58f8f92e012c68f7b.json",
+					"name" : "clangformat-dryrun",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "codecheck::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-codecheck-Debug-c79725521808d4d5ecff.json",
+					"name" : "codecheck",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "codecheck-fix::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-codecheck-fix-Debug-537ae5c25ec553129ba5.json",
+					"name" : "codecheck-fix",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "doc::@c2466c91de71b9c692d9",
+					"jsonFile" : "target-doc-Debug-58aea01c9e0c4727df3a.json",
+					"name" : "doc",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "doc_html::@c2466c91de71b9c692d9",
+					"jsonFile" : "target-doc_html-Debug-2e8aec67beeadae438d2.json",
+					"name" : "doc_html",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "doc_man::@c2466c91de71b9c692d9",
+					"jsonFile" : "target-doc_man-Debug-f3a44ef4c454a336e809.json",
+					"name" : "doc_man",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "i3ipc++::@0ecdb005f66b7bfdf651",
+					"jsonFile" : "target-i3ipc++-Debug-f2e46f2c3eed4cff398c.json",
+					"name" : "i3ipc++",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "memcheck::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-memcheck-Debug-f3368f1486f8c3ae1231.json",
+					"name" : "memcheck",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "memcheck-full::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-memcheck-full-Debug-107f70883b549619f6ed.json",
+					"name" : "memcheck-full",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "poly::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-poly-Debug-81718e6c228bac4e116d.json",
+					"name" : "poly",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "polybar::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-polybar-Debug-e21153b9c835d3f2fb04.json",
+					"name" : "polybar",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "polybar-msg::@90a2315b7a9c97cd24d2",
+					"jsonFile" : "target-polybar-msg-Debug-6fbd0b01aa4ca9453d39.json",
+					"name" : "polybar-msg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Debug-81085eb64bdb4b9475cc.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "xpp::@eef20d5f17b15223ed34",
+					"jsonFile" : "target-xpp-Debug-f5c7788cf4c407fc706f.json",
+					"name" : "xpp",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/berke/Documents/Work/freebsd-bspwm-dotfiles/build",
+		"source" : "/home/berke/Documents/Work/freebsd-bspwm-dotfiles/third_party/polybar"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

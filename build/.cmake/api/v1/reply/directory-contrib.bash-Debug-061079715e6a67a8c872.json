@@ -1,0 +1,43 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"contrib/bash/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "tools",
+			"destination" : "share/bash-completion/completions",
+			"paths" : 
+			[
+				"contrib/bash/polybar"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "contrib/bash",
+		"source" : "contrib/bash"
+	}
+}

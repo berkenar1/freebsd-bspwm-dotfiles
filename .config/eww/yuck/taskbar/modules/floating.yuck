@@ -1,0 +1,119 @@
+;     ______            __  _            
+;    / __/ /___  ____ _/ /_(_)___  ____ _
+;   / /_/ / __ \/ __ `/ __/ / __ \/ __ `/
+;  / __/ / /_/ / /_/ / /_/ / / / / /_/ / 
+; /_/ /_/\____/\__,_/\__/_/_/ /_/\__, /  
+;                               /____/   
+;
+
+(defwidget lock_indicator []
+  (box
+        :space-evenly false :spacing 0 :class "phosphor lock_status" 
+    (revealer
+      :transition "slideleft" :duration "0.2s"
+      :reveal "${lock_key.caps_lock == "on" ? "true" : "false" }"
+            (label
+              :text "節"))
+    (revealer
+      :transition "slideleft" :duration "0.2s"
+      :reveal "${lock_key.num_lock == "off" ? "true" : "false" }"
+              (label
+                :text "ﳌ"))))
+
+(defwidget bat_indicator [bat_critical bat_low bat_normal bat_medium bat_full battery
+                                bat_status bat_charging]
+  (box 
+    :space-evenly false :spacing 0 :class "bat_bound"
+    (label 
+      :class "bat_icon phosphor" 
+      :text "${bat_status == "Charging" ? bat_charging : 
+                   battery > 90 ? bat_full : 
+                   battery > 50 ? bat_medium :
+                   battery > 25 ? bat_normal :
+                   battery > 15 ? bat_low : bat_critical}")
+    (box
+      (revealer
+        :transition "slideleft"
+        :reveal "${net_hover == true ? "false" :
+                unit_hover == true ? "false" : "true" }"
+        (label 
+          :class "bat_text" :text "${battery}%")))))
+
+(defwidget notif_bell [notif_switch]
+ (eventbox 
+          :cursor "pointer"
+          :onclick notif_switch
+   (label :class "${notif_initial != "" ? "notif_icon" : "notif_icon_off"} notif_bell"
+          :text "${notif_initial}")))
+
+(defwidget cpu_temp_text []
+ (eventbox 
+   :tooltip "Current CPU temperature" 
+     (box 
+       :space-evenly false :spacing 0
+       (label 
+        :class "${cpu_temp >= 60 ? "cpu_hot awesome" : "cpu_normal phosphor"}"
+        :text "${cpu_temp >= 60 ? "" : "瑩"}")
+       (revealer
+            :transition "slideright"
+            :reveal "${usage_hover == true ? "false" : "true" }"
+           (label 
+             :class "${cpu_temp >= 60 ? "cpu_hot cpu_text" : "cpu_normal"}"
+             :text "${cpu_temp}°C")))))
+
+(defwidget layout_state []
+  (box
+    (label 
+      :limit-width 1 :class "window_state phosphor"
+      :text "${layout_var}")))
+
+(defwidget sticky_title []
+  (box
+    (label 
+      :limit-width 1 :class "window_state phosphor"
+      :text "${sticky_var}")))
+
+(defwidget title_bar []
+  (box
+    :space-evenly false :spacing 0
+    (label
+      :limit-width 60
+      :class "window_title"
+      :text "${window_title}")))
+
+(defwidget network_speed []
+  (box
+    (revealer 
+      :transition "slideleft"
+      :reveal "${left_hover == true ? "false" :
+                 right_hover == true ? "false" : speed_hover }"
+      (box
+        :class "speed_box"
+        :space-evenly false :spacing 0
+        (box
+          :orientation "v" :space-evenly false
+          :spacing 0 :valign "end"
+    
+          (box
+            :orientation "h" :space-evenly false :spacing 0
+            (label
+              :class "net_icon awesome" :text "")
+            (label 
+              :class "net_speed"
+              :text "${u_speed}"))
+          (box
+            :orientation "h" :space-evenly false :spacing 0
+            (label
+              :class "net_icon awesome" :text "")
+            (label            
+              :class "net_speed"
+              :text "${d_speed}")))))))
+
+(defwidget system_tray [tray_toggle]
+  (eventbox 
+    :cursor "pointer" :onclick tray_toggle
+    :onhover "eww update tray_hover=true &"
+    :onhoverlost "eww update tray_hover=false &"
+    (label
+      :class "system_tray awesome"
+      :text "${tray_initial}")))
