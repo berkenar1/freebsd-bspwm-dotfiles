@@ -96,13 +96,13 @@ BSPF
     if ! xlsclients -display "$SET_DISPLAY" >/dev/null 2>&1 || [ "$(xlsclients -display "$SET_DISPLAY" | wc -l)" -eq 0 ]; then
         echo "No clients detected on $SET_DISPLAY; launching a guaranteed test client (xmessage/xclock/xterm)"
         if command -v xmessage >/dev/null 2>&1; then
-            DISPLAY="$SET_DISPLAY" xmessage -center -buttons OK:0 "bspwm test session (forced)" > "$LOGDIR/forced-client.out" 2>&1 &
+            DISPLAY="$SET_DISPLAY" xmessage -fn fixed -center -buttons OK:0 "bspwm test session (forced)" > "$LOGDIR/forced-client.out" 2>&1 &
             FC_PID=$!
         elif command -v xclock >/dev/null 2>&1; then
-            DISPLAY="$SET_DISPLAY" xclock > "$LOGDIR/forced-client.out" 2>&1 &
+            DISPLAY="$SET_DISPLAY" xclock -fn fixed > "$LOGDIR/forced-client.out" 2>&1 &
             FC_PID=$!
         elif command -v xterm >/dev/null 2>&1; then
-            DISPLAY="$SET_DISPLAY" xterm -hold -e "echo 'bspwm test session' ; sleep 300" > "$LOGDIR/forced-client.out" 2>&1 &
+            DISPLAY="$SET_DISPLAY" xterm -fn fixed -hold -e "echo 'bspwm test session' ; sleep 300" > "$LOGDIR/forced-client.out" 2>&1 &
             FC_PID=$!
         else
             echo "No GUI fallback client available to force a window"
