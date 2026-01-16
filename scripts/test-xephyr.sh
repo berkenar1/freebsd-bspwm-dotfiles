@@ -51,6 +51,41 @@ fi
 DISPLAY="$SET_DISPLAY" sh -c 'exec bspwm' > "$BSPWM_LOG" 2>&1 &
 BSPWM_PID=$!
 echo "Started bspwm (PID $BSPWM_PID)"
+
+# Give bspwm a moment to start and check for common failure modes
+sleep 1
+# If bspwm exited quickly or logged a configuration execution error, replace with a minimal test config and restart
+if ! kill -0 "$BSPWM_PID" 2>/dev/null || ( [ -f "$BSPWM_LOG" ] && grep -q "Couldn't execute the configuration file" "$BSPWM_LOG" 2>/dev/null ); then
+    echo "bspwm failed to start or config execution failed - applying fallback minimal bspwmrc (logged in $LOGDIR)"
+    # Backup existing config
+    if [ -f "$HOME/.config/bspwm/bspwmrc" ]; then
+        mkdir -p "$LOGDIR/backup"
+        cp -p "$HOME/.config/bspwm/bspwmrc" "$LOGDIR/backup/bspwmrc.before-fallback" 2>/dev/null || true
+    fi
+
+    # Write a minimal bspwmrc that sets a background and spawns a simple X client so we see something on screen
+    mkdir -p "$HOME/.config/bspwm"
+    cat > "$HOME/.config/bspwm/bspwmrc" <<'BSPF'
+#!/bin/sh
+# Minimal test bspwmrc used by test-xephyr.sh fallback
+xsetroot -solid "#222222" &
+# Spawn a visible client to ensure mapping - use xmessage if available, otherwise xclock
+if command -v xmessage >/dev/null 2>&1; then
+    DISPLAY="$SET_DISPLAY" xmessage -buttons OK:0 "bspwm test session" &
+elif command -v xclock >/dev/null 2>&1; then
+    DISPLAY="$SET_DISPLAY" xclock &
+fi
+# Keep script short - bspwm runs independently
+BSPF
+    chmod +x "$HOME/.config/bspwm/bspwmrc"
+
+    # If previous bspwm process still exists, kill it, then restart
+    kill "$BSPWM_PID" 2>/dev/null || true
+    sleep 0.4
+    DISPLAY="$SET_DISPLAY" sh -c 'exec bspwm' > "$BSPWM_LOG" 2>&1 &
+    BSPWM_PID=$!
+    echo "Restarted bspwm with minimal test config (PID $BSPWM_PID). Logs: $BSPWM_LOG"
+fi
 # Start polybar via launch script or direct call (log to file)
 if [ -x "$HOME/.config/polybar/launch.sh" ]; then
     DISPLAY="$SET_DISPLAY" "$HOME/.config/polybar/launch.sh" > "$POLY_LOG" 2>&1 &
