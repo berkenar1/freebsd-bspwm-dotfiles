@@ -69,11 +69,16 @@ if ! kill -0 "$BSPWM_PID" 2>/dev/null || ( [ -f "$BSPWM_LOG" ] && grep -q "Could
 #!/bin/sh
 # Minimal test bspwmrc used by test-xephyr.sh fallback
 xsetroot -solid "#222222" &
-# Spawn a visible client to ensure mapping - use xmessage if available, otherwise xclock
+# Spawn a visible client to ensure mapping - prefer xmessage, then xclock
 if command -v xmessage >/dev/null 2>&1; then
-    DISPLAY="$SET_DISPLAY" xmessage -buttons OK:0 "bspwm test session" &
+    xmessage -buttons OK:0 "bspwm test session" &
 elif command -v xclock >/dev/null 2>&1; then
-    DISPLAY="$SET_DISPLAY" xclock &
+    xclock &
+else
+    # As a last resort spawn a small loop that keeps a window mapped (if xterm available)
+    if command -v xterm >/dev/null 2>&1; then
+        xterm -hold -e "echo 'bspwm test session'; sleep 300" &
+    fi
 fi
 # Keep script short - bspwm runs independently
 BSPF
@@ -85,6 +90,28 @@ BSPF
     DISPLAY="$SET_DISPLAY" sh -c 'exec bspwm' > "$BSPWM_LOG" 2>&1 &
     BSPWM_PID=$!
     echo "Restarted bspwm with minimal test config (PID $BSPWM_PID). Logs: $BSPWM_LOG"
+
+    # Wait a short while for windows to map, then check for any mapped clients
+    sleep 1
+    if ! xlsclients -display "$SET_DISPLAY" >/dev/null 2>&1 || [ "$(xlsclients -display "$SET_DISPLAY" | wc -l)" -eq 0 ]; then
+        echo "No clients detected on $SET_DISPLAY; launching a guaranteed test client (xmessage/xclock/xterm)"
+        if command -v xmessage >/dev/null 2>&1; then
+            DISPLAY="$SET_DISPLAY" xmessage -center -buttons OK:0 "bspwm test session (forced)" > "$LOGDIR/forced-client.out" 2>&1 &
+            FC_PID=$!
+        elif command -v xclock >/dev/null 2>&1; then
+            DISPLAY="$SET_DISPLAY" xclock > "$LOGDIR/forced-client.out" 2>&1 &
+            FC_PID=$!
+        elif command -v xterm >/dev/null 2>&1; then
+            DISPLAY="$SET_DISPLAY" xterm -hold -e "echo 'bspwm test session' ; sleep 300" > "$LOGDIR/forced-client.out" 2>&1 &
+            FC_PID=$!
+        else
+            echo "No GUI fallback client available to force a window"
+            FC_PID=0
+        fi
+        echo "Forced client PID: $FC_PID (logs $LOGDIR/forced-client.out)"
+    else
+        echo "Client(s) detected on $SET_DISPLAY" 
+    fi
 fi
 # Start polybar via launch script or direct call (log to file)
 if [ -x "$HOME/.config/polybar/launch.sh" ]; then
