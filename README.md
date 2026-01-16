@@ -251,6 +251,13 @@ How to test
 ./scripts/verify-theme-colors.sh
 ```
 
+3. To update the bundled b9k theme (pull latest from the bundled repo and re-apply):
+
+```sh
+./scripts/theme-b9k.sh update
+```
+
+The `update` command will fetch and pull the upstream changes from `third_party/beyond9thousand-dotfiles` and then re-apply the theme (creating a backup).
 3. If anything looks wrong, revert to the previous configuration (restores files from the most recent backup):
 
 ```sh

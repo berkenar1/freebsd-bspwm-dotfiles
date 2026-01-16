@@ -1,0 +1,336 @@
+#######################
+# Program Keybindings #
+#######################
+# FreeBSD compatible sxhkd configuration
+# Full DE-like experience with comprehensive keybindings
+
+# Spawn Terminal
+# Use alacritty as default terminal (more compatible with FreeBSD)
+super + Return
+	alacritty
+
+# Spawn terminal with tmux
+super + shift + Return
+	alacritty -e tmux
+
+# Rofi application launcher
+alt + @space
+	rofi -show drun -show-icons
+
+# Rofi window switcher
+super + w
+	rofi -show window
+
+# Rofi run prompt
+super + r
+	rofi -show run
+
+#----~ Screenshots ~----#
+
+# Screenshot full screen
+Print
+	~/.local/scripts/screenshot.sh full
+
+# Screenshot with area selection
+shift + Print
+	~/.local/scripts/screenshot.sh area
+
+# Screenshot active window
+super + Print
+	~/.local/scripts/screenshot.sh window
+
+# Screenshot menu
+super + shift + Print
+	~/.local/scripts/screenshot.sh
+
+#----~ DE-like Utilities ~----#
+
+# Clipboard manager
+super + v
+	~/.local/scripts/clipboard.sh show
+
+# Emoji picker (using rofi)
+super + period
+	rofi -show emoji -modi emoji || rofimoji
+
+# Wallpaper selector
+super + shift + w
+	~/.local/scripts/wallpaper.sh select
+
+# Random wallpaper
+super + ctrl + w
+	~/.local/scripts/wallpaper.sh random
+
+# Quick settings menu
+super + s
+	~/.local/scripts/quicksettings.sh
+
+# Power menu
+super + x
+	~/.local/scripts/powermenu.sh
+
+# Keybind helper
+super + h
+	~/.local/scripts/keybinds.sh
+
+# Game mode toggle
+super + F12
+	~/.local/scripts/gamemode.sh toggle
+
+# File manager (GUI)
+super + e
+	pcmanfm || thunar || nautilus || alacritty -e lf
+
+# File manager (terminal)
+super + shift + e
+	alacritty -e lf
+
+# Web browser
+super + b
+	firefox || chromium || brave
+
+# Text editor
+super + t
+	alacritty -e nvim
+
+# System monitor
+super + shift + m
+	alacritty -e htop || alacritty -e top
+
+#####################
+# BSPWM Keybindings #
+#####################
+
+#----~ Init ~----#
+
+# make sxhkd reload its configuration files:
+super + Escape
+	pkill -USR1 -x sxhkd; notify-send "sxhkd" "Configuration reloaded"
+
+# Toggle compositor
+super + shift + c
+	pgrep picom && { pkill picom; notify-send "Picom" "Compositor disabled"; } || { picom & notify-send "Picom" "Compositor enabled"; }
+
+# Reload Polybar
+super + shift + Escape
+	~/.config/polybar/launch.sh; notify-send "Polybar" "Reloaded"
+
+# quit/restart bspwm
+super + alt + {q,r}
+	bspc {quit,wm -r}
+
+# Quit all ~ return to login
+super + alt + x
+	pkill -KILL -u $(whoami)
+
+# close and kill windows
+super + {_,shift + }q
+	bspc node -{c,k}
+
+#----~ Workspace Switching ~----#
+
+# Switch Active Workspaces
+alt + {Tab, shift + Tab}
+	bspc {desktop next.occupied -f, desktop prev.occupied -f}
+
+# focus the last node/desktop
+super + {grave,Tab}
+	bspc {node,desktop} -f last
+
+#----~ Workspace Management ~----#
+
+# alternate between the tiled and monocle layout
+super + m
+	bspc desktop -l next
+
+# Toggle fullscreen
+super + f
+	bspc node -t \~fullscreen
+
+# swap the current node and the biggest local node
+super + g
+	bspc node -s biggest.local
+
+# set the node flags
+super + ctrl + {m,l,s,p}
+	bspc node -g {marked,locked,sticky,private}
+
+# Toggle between floating and tiling
+super + u
+	bspc node focused.tiled -t floating || bspc node focused.floating -t tiled
+
+# Toggle between pseudo-tiling and tiling
+super + i
+	bspc node focused.tiled -t pseudo_tiled || bspc node -t tiled
+
+# Rotate layout by 90 degrees
+super + shift + r
+	bspc node @/ -R 90
+
+# Flip layout horizontally/vertically
+super + {_,shift + }semicolon
+	bspc node @/ -F {horizontal,vertical}
+
+#send node to next/previous workspace and follow
+super + {_, shift} + k
+	bspc node -d {next, prev} -f
+
+#----~ Focus Settings ~----#
+
+# focus the node in the given direction
+super + {Left, Down, Up, Right}
+	bspc node -f {west,south,north,east}
+
+# focus the node in the given direction (vim keys)
+super + {j,k,l,semicolon}
+	bspc node -f {west,south,north,east}
+
+# focus the node for the given path jump
+super + shift + {p,b}
+	bspc node -f @{parent,brother}
+
+# focus the next/previous node in the current desktop
+super + {_,shift + }n
+	bspc node -f {next,prev}.local.!hidden.window
+
+# focus the next/previous desktop in the current monitor
+super + bracket{left,right}
+	bspc desktop -f {prev,next}.local
+
+# focus or send to the given desktop
+super + {_,shift + }{1-9}
+	bspc {desktop -f,node -d} '^{1-9}'
+
+# focus or send to desktop 10
+super + {_,shift + }0
+	bspc {desktop -f,node -d} '^10'
+
+# Switch places with the direction window
+super + shift + {Left, Down, Up, Right}
+	bspc node -s {west,south,north,east}
+
+#----~ Preselection ~----#
+
+# preselect the direction
+super + ctrl + {Left, Down, Up, Right}
+	bspc node -p {west,south,north,east}
+
+# preselect the ratio
+super + ctrl + {1-9}
+	bspc node -o 0.{1-9}
+
+# cancel the preselection for the focused node
+super + ctrl + space
+	bspc node -p cancel
+
+# cancel the preselection for the focused desktop
+super + ctrl + shift + space
+	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
+
+#----~ Movement/Resizing ~----#
+
+# Resize windows (expand)
+super + alt + {Left, Down, Up, Right}
+	bspc node -z {left -25 0, bottom 0 25, top 0 -25, right 25 0}
+
+# Resize windows (shrink)
+super + alt + shift + {Left, Down, Up, Right}
+	bspc node -z {right -25 0, top 0 25, bottom 0 -25, left 25 0}
+
+# Move floating window
+super + ctrl + {Left, Down, Up, Right}
+	bspc node -v {-25 0, 0 25, 0 -25, 25 0}
+
+###################################
+########### System Keys ###########
+###################################
+
+#----~ Volume Control ~----#
+# Uses custom script with notifications
+# Falls back to native commands if script not available
+
+XF86AudioLowerVolume
+	~/.local/scripts/volume.sh down 5 || mixer vol -5 || pamixer -d 5
+
+XF86AudioRaiseVolume
+	~/.local/scripts/volume.sh up 5 || mixer vol +5 || pamixer -i 5
+
+XF86AudioMute
+	~/.local/scripts/volume.sh mute || mixer vol ^mute || pamixer -t
+
+# Fine volume control with shift
+shift + XF86AudioLowerVolume
+	~/.local/scripts/volume.sh down 1 || mixer vol -1 || pamixer -d 1
+
+shift + XF86AudioRaiseVolume
+	~/.local/scripts/volume.sh up 1 || mixer vol +1 || pamixer -i 1
+
+#----~ Brightness Control ~----#
+# Uses custom script with notifications
+
+XF86MonBrightnessDown
+	~/.local/scripts/brightness.sh dec 5
+
+XF86MonBrightnessUp
+	~/.local/scripts/brightness.sh inc 5
+
+# Fine brightness control with shift
+shift + XF86MonBrightnessDown
+	~/.local/scripts/brightness.sh dec 1
+
+shift + XF86MonBrightnessUp
+	~/.local/scripts/brightness.sh inc 1
+
+#----~ Media Controls ~----#
+
+XF86AudioPlay
+	playerctl play-pause || mpc toggle
+
+XF86AudioPause
+	playerctl pause || mpc pause
+
+XF86AudioNext
+	playerctl next || mpc next
+
+XF86AudioPrev
+	playerctl previous || mpc prev
+
+XF86AudioStop
+	playerctl stop || mpc stop
+
+# Alternative media keys (for keyboards without XF86 keys)
+super + {comma, period, slash}
+	playerctl {previous, play-pause, next} || mpc {prev, toggle, next}
+
+#----~ Lock Screen ~----#
+
+super + shift + l
+	~/.local/scripts/powermenu.sh || i3lock -c 2a2f33 || xlock -mode blank
+
+# Lock screen immediately
+super + l
+	i3lock -c 2a2f33 || xlock -mode blank
+
+#----~ Music Player ~----#
+
+# Open ncmpcpp (music player)
+super + alt + m
+	alacritty -e ncmpcpp
+
+#----~ Notifications ~----#
+
+# Close notification
+super + space
+	dunstctl close
+
+# Close all notifications
+super + shift + space
+	dunstctl close-all
+
+# Show notification history
+super + grave
+	dunstctl history-pop
+
+# Toggle do not disturb
+super + d
+	dunstctl set-paused toggle && notify-send "Notifications" "$(dunstctl is-paused && echo 'Paused' || echo 'Active')"

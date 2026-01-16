@@ -1,0 +1,54 @@
+#!/bin/bash
+
+#     __
+#    / /_  _________ _      ______ ___
+#   / __ \/ ___/ __ \ | /| / / __ `__ \
+#  / /_/ (__  ) /_/ / |/ |/ / / / / / /
+# /_.___/____/ .___/|__/|__/_/ /_/ /_/
+#           /_/
+#
+
+_config="$XDG_CONFIG_HOME/bspwm"
+
+# Restore wallpaper
+nitrogen --restore &
+
+# Fix the pointer for BSPWM
+xsetroot -cursor_name left_ptr &
+
+# Set configurations
+for i in "$_config"/configs/*.sh; do
+	{
+		eval "$i" &
+	}
+done
+
+# Set rules
+for i in "$_config"/rules/*.sh; do
+	{
+		eval "$i" &
+	}
+done
+
+# Kill if already running
+killall -9 ksuperkey
+
+# Enable Super Keys For Menu
+ksuperkey -e 'Super_L=Alt_L|F1' &
+ksuperkey -e 'Super_R=Alt_L|F1' &
+
+# Polkit agent
+if [[ ! $(pidof xfce-polkit) ]]; then
+	/usr/lib/xfce-polkit/xfce-polkit &
+fi
+
+# Delete existing hooks and restart them
+for i in "$_config"/hooks/*; do
+	{
+		pkill -9 -f "$i"
+		eval "$i" &
+	}
+done
+
+# Autostart apps
+eval "$_config/autostart.sh" &

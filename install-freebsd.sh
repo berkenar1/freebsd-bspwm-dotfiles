@@ -528,6 +528,28 @@ create_directories() {
     log_success "Directories created!"
 }
 
+# Make script-like files executable inside a config directory
+# Marks files executable if they have a shebang, end with .sh, or live in a known scripts/ directory
+set_executables() {
+    target_dir="$1"
+    [ -d "$target_dir" ] || return
+
+    # Make files in any scripts subdir executable
+    if [ -d "$target_dir/scripts" ]; then
+        find "$target_dir/scripts" -type f -exec chmod +x {} + 2>/dev/null || true
+    fi
+
+    # Make files with .sh executable
+    find "$target_dir" -type f -name '*.sh' -exec chmod +x {} + 2>/dev/null || true
+
+    # Make files with shebang executable
+    find "$target_dir" -type f -exec sh -c 'first=$(head -n1 "${1}" 2>/dev/null || echo); case "${first}" in "#!"*) chmod +x "${1}" ;; esac' _ {} \; 2>/dev/null || true
+
+    # Ensure bspwm scripts are executable if present
+    if [ -f "$target_dir/bspwmrc" ]; then chmod +x "$target_dir/bspwmrc" 2>/dev/null || true; fi
+    if [ -f "$target_dir/autostart" ]; then chmod +x "$target_dir/autostart" 2>/dev/null || true; fi
+}
+
 install_dotfiles() {
     log_info "Installing dotfiles..."
 
@@ -541,6 +563,11 @@ install_dotfiles() {
             log_info "Copying all files from $DOTFILES_DIR/.config to $XDG_CONFIG_HOME"
             if cp -Rp "$DOTFILES_DIR/.config/." "$XDG_CONFIG_HOME/" 2>/dev/null; then
                 log_success "All .config files copied to $XDG_CONFIG_HOME"
+                # Ensure common script dirs have executable bits set
+                set_executables "$XDG_CONFIG_HOME/bspwm"
+                set_executables "$XDG_CONFIG_HOME/polybar"
+                set_executables "$XDG_CONFIG_HOME/scripts"
+                set_executables "$XDG_CONFIG_HOME/sxhkd"
             else
                 log_warning "cp -Rp failed for some files; falling back to per-entry copy"
             fi
@@ -557,6 +584,7 @@ install_dotfiles() {
                         log_info "Installing bspwm config: $entry_name"
                         rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
                         cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                        set_executables "$XDG_CONFIG_HOME/$entry_name"
                     else
                         log_info "Skipping bspwm config: $entry_name"
                     fi
@@ -566,6 +594,7 @@ install_dotfiles() {
                         log_info "Installing sxhkd config: $entry_name"
                         rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
                         cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                        set_executables "$XDG_CONFIG_HOME/$entry_name"
                     else
                         log_info "Skipping sxhkd config: $entry_name"
                     fi
@@ -575,6 +604,7 @@ install_dotfiles() {
                         log_info "Installing WM config: $entry_name"
                         rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
                         cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                        set_executables "$XDG_CONFIG_HOME/$entry_name"
                     else
                         log_info "Skipping WM config: $entry_name"
                     fi
@@ -587,6 +617,7 @@ install_dotfiles() {
                             log_info "Installing NeoVim config: $entry_name"
                             rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
                             cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                            set_executables "$XDG_CONFIG_HOME/$entry_name"
                         fi
                     else
                         log_info "Skipping NeoVim config: $entry_name"
@@ -597,6 +628,7 @@ install_dotfiles() {
                         log_info "Installing audio config: $entry_name"
                         rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
                         cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                        set_executables "$XDG_CONFIG_HOME/$entry_name"
                     else
                         log_info "Skipping audio config: $entry_name"
                     fi
@@ -606,6 +638,7 @@ install_dotfiles() {
                     log_info "Installing config: $entry_name"
                     rm -rf "$XDG_CONFIG_HOME/$entry_name" 2>/dev/null || true
                     cp -Rp "$entry" "$XDG_CONFIG_HOME/" 2>/dev/null || log_warning "Failed to copy: $entry"
+                    set_executables "$XDG_CONFIG_HOME/$entry_name"
                     ;;
             esac
         done
@@ -639,6 +672,24 @@ install_dotfiles() {
         cp "$DOTFILES_DIR/.config/polybar/launch-freebsd.sh" "$XDG_CONFIG_HOME/polybar/launch.sh"
         chmod +x "$XDG_CONFIG_HOME/polybar/launch.sh"
         log_info "Applied FreeBSD override: polybar launch"
+
+    # Ask to install beyond9thousand (b9k) theme
+    printf "Install beyond9thousand theme (b9k)? [Y/n]: "
+    read -r __ans
+    case $__ans in
+        n|N) INSTALL_THEME_B9K=false ;;
+        *) INSTALL_THEME_B9K=true ;;
+    esac
+
+    if [ "${INSTALL_THEME_B9K:-false}" = true ]; then
+        log_info "Installing b9k theme to $HOME/.config"
+        if [ -x "$DOTFILES_DIR/scripts/theme-b9k.sh" ]; then
+            "$DOTFILES_DIR/scripts/theme-b9k.sh" apply
+            log_info "b9k theme applied. Backups are in $DOTFILES_DIR/backups (if any)"
+        else
+            log_warning "theme-b9k helper script not found or not executable"
+        fi
+    fi
     fi
 
     if [ -f "$DOTFILES_DIR/.config/picom/picom-freebsd.conf" ]; then

@@ -1,0 +1,48 @@
+//          __        __
+//    _____/ /___  __/ /__
+//   / ___/ __/ / / / / _ \
+//  (__  ) /_/ /_/ / /  __/
+// /____/\__/\__, /_/\___/
+//          /____/
+//
+
+* {
+  all: unset;
+}
+
+// .glyph {
+.phosphor {
+  font-family: "Phosphor";
+  font-size: 25px;
+}
+
+// .glyph_awesome {
+.awesome {
+  font-family: "Font Awesome 6 Free Solid";
+  font-size: 22px;
+  padding: 0px 1px;
+}
+
+.awesome_regular {
+  font-family: "Font Awesome 6 Free Regular";
+}
+
+.glyph_jet {
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 24px;
+}
+
+.iosevka {
+  font-family: "Iosevka Nerd Font";
+  font-weight: 500;
+}
+
+.jetbrains {
+  font-family: "JetBrainsMono Nerd Font";
+}
+
+// Predefined colors
+@import "./scss/colors.scss";
+@import "./scss/taskbar/init.scss";
+@import "./scss/calendar/init.scss";
+@import "./scss/slab/init.scss";

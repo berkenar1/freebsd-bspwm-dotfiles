@@ -1,0 +1,111 @@
+# =========================
+# Environment
+# =========================
+[env]
+TERM = "alacritty"
+ALACRITTY= "1"
+# =========================
+# Window
+# =========================
+[window]
+padding = { x = 12, y = 12 }
+dynamic_padding = true
+decorations = "full"
+opacity = 0.98
+blur = false
+
+# =========================
+# Scrolling
+# =========================
+[scrolling]
+history = 50000
+multiplier = 3
+
+# =========================
+# Font
+# =========================
+[font]
+normal = { family = "FiraCode Nerd Font", style = "Regular" }
+bold = { family = "FiraCode Nerd Font", style = "Bold" }
+italic = { family = "FiraCode Nerd Font", style = "Italic" }
+bold_italic = { family = "FiraCode Nerd Font", style = "Bold Italic" }
+size = 12.0
+
+[font.offset]
+x = 0
+y = 1
+
+# =========================
+# Cursor
+# =========================
+[cursor]
+style = { shape = "Beam", blinking = "On" }
+thickness = 0.15
+
+# =========================
+# Colors (Dracula-ish)
+# =========================
+[colors.primary]
+background = "#050510"
+foreground = "#f8f8f2"
+
+[colors.cursor]
+text = "#050510"
+cursor = "#ff79c6"
+
+[colors.selection]
+text = "CellForeground"
+background = "#44475a"
+
+[colors.normal]
+black   = "#21222c"
+red     = "#ff5555"
+green   = "#50fa7b"
+yellow  = "#f1fa8c"
+blue    = "#bd93f9"
+magenta = "#ff79c6"
+cyan    = "#8be9fd"
+white   = "#f8f8f2"
+
+[colors.bright]
+black   = "#6272a4"
+red     = "#ff6e6e"
+green   = "#69ff94"
+yellow  = "#ffffa5"
+blue    = "#d6acff"
+magenta = "#ff92df"
+cyan    = "#a4ffff"
+white   = "#ffffff"
+
+# =========================
+# Bell
+# =========================
+[bell]
+animation = "Linear"
+duration = 0
+
+# =========================
+# Keyboard Bindings
+# =========================
+[keyboard]
+bindings = [
+  # Copy/Paste (Shift+Ctrl to avoid tmux conflicts)
+  { key = "V", mods = "Control|Shift", action = "Paste" },
+  { key = "C", mods = "Control|Shift", action = "Copy"  },
+  
+  # Font size
+  { key = "Plus",  mods = "Control", action = "IncreaseFontSize" },
+  { key = "Minus", mods = "Control", action = "DecreaseFontSize" },
+  { key = "Key0",  mods = "Control", action = "ResetFontSize"    },
+  
+  # New window
+  { key = "T", mods = "Control|Shift", action = "CreateNewWindow" },
+  
+  ]
+
+# =========================
+# Terminal Shell
+# =========================
+[terminal.shell]
+program = "/usr/local/bin/tmux"
+

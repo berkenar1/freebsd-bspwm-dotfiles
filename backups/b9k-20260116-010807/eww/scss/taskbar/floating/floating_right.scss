@@ -1,0 +1,87 @@
+.net_speed {
+  font-size: 14px;
+  padding: 0px 6px;
+  margin: 0px;
+  color: $fg_blend;
+}
+
+.net_icon {
+  font-size: 20px;
+  padding: 0px;
+  color: $fg_blend;
+  margin: 0px;
+}
+
+.speed_box {
+  padding: 0px 0px;
+  margin: 0px;
+}
+
+.lock_status {
+  font-size: 28px;
+  padding: 0px 5px 0px 0px;
+  color: $blue;
+}
+
+.notif_bell {
+  font-family: "Phosphor";
+  font-size: 25px;
+  padding: 0px 0px;
+}
+
+.notif_icon {
+  color: $yellow;
+}
+
+.notif_icon_off {
+  color: $fg_blend;
+}
+
+.bat_bound {
+  padding: 0px 2px;
+}
+
+.bat_icon {
+  color: $green;
+  padding: 0px 2px 0px 6px;
+  font-size: 28px;
+}
+
+.bat_text {
+  padding: 0px 0px 0px 8px;
+  color: $green;
+}
+
+.date {
+  color: $blue;
+}
+
+.date > box {
+  border-radius: 8px;
+  margin: 5px 0px 5px 5px;
+  padding: 0px 5px;
+  transition: all 0.5s ease;
+  background-color: $bg_blend;
+}
+
+.date_pressed > box {
+  border-radius: 8px;
+  margin: 5px 0px 5px 5px;
+  padding: 0px 5px;
+  color: $bg;
+  background-color: $blue;
+}
+
+.date:active > box {
+  background-color: $blue;
+}
+
+.date:active {
+  color: $bg;
+}
+
+.system_tray {
+  color: $blue;
+  padding: 0px 0px 0px 5px;
+  font-size: 22px;
+}
