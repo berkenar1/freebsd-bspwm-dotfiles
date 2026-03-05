@@ -1963,7 +1963,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/usr/local/lib/libfreetype.so][/usr/local/include/freetype2][v2.13.3()]"
+			"value" : "[/usr/local/lib/libfreetype.so][/usr/local/include/freetype2][v2.14.1()]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_LibInotify",
@@ -2035,7 +2035,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/usr/local/bin/python3.12][cfound components: Interpreter ][v3.12.11()]"
+			"value" : "[/usr/local/bin/python3.12][cfound components: Interpreter ][v3.12.12()]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_Threads",
@@ -13743,7 +13743,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "Python;3;12;11;64;32;<none>;cpython-312;abi3;/usr/local/lib/python3.12;/usr/local/lib/python3.12;/usr/local/lib/python3.12/site-packages;/usr/local/lib/python3.12/site-packages"
+			"value" : "Python;3;12;12;64;32;<none>;cpython-312;abi3;/usr/local/lib/python3.12;/usr/local/lib/python3.12;/usr/local/lib/python3.12/site-packages;/usr/local/lib/python3.12/site-packages"
 		},
 		{
 			"name" : "_Python3_INTERPRETER_SIGNATURE",

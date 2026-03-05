@@ -873,7 +873,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_CURL:INTERNAL=[/usr/local/include][curl][v8.16.0()]
 //Details about finding CairoFC
 FIND_PACKAGE_MESSAGE_DETAILS_CairoFC:INTERNAL=[/usr/local/include;/usr/local/include/cairo;/usr/local/include/pixman-1;/usr/local/include/freetype2;/usr/include;/usr/local/include/libpng16][cairo;fontconfig;freetype][v1.18.2()]
 //Details about finding Freetype
-FIND_PACKAGE_MESSAGE_DETAILS_Freetype:INTERNAL=[/usr/local/lib/libfreetype.so][/usr/local/include/freetype2][v2.13.3()]
+FIND_PACKAGE_MESSAGE_DETAILS_Freetype:INTERNAL=[/usr/local/lib/libfreetype.so][/usr/local/include/freetype2][v2.14.1()]
 //Details about finding LibInotify
 FIND_PACKAGE_MESSAGE_DETAILS_LibInotify:INTERNAL=[/usr/local/include][inotify][v20240724()]
 //Details about finding LibMPDClient
@@ -885,7 +885,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_LibUV:INTERNAL=[/usr/local/include][uv][v1.51.0(1.3
 //Details about finding PkgConfig
 FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/usr/local/bin/pkg-config][v2.4.3()]
 //Details about finding Python3
-FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/usr/local/bin/python3.12][cfound components: Interpreter ][v3.12.11()]
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/usr/local/bin/python3.12][cfound components: Interpreter ][v3.12.12()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //Details about finding XCB
@@ -1850,7 +1850,7 @@ _Python3_Development_REASON_FAILURE:INTERNAL=
 //Path to a program.
 _Python3_EXECUTABLE:INTERNAL=/usr/local/bin/python3.12
 //Python3 Properties
-_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;12;11;64;32;<none>;cpython-312;abi3;/usr/local/lib/python3.12;/usr/local/lib/python3.12;/usr/local/lib/python3.12/site-packages;/usr/local/lib/python3.12/site-packages
+_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;12;12;64;32;<none>;cpython-312;abi3;/usr/local/lib/python3.12;/usr/local/lib/python3.12;/usr/local/lib/python3.12/site-packages;/usr/local/lib/python3.12/site-packages
 _Python3_INTERPRETER_SIGNATURE:INTERNAL=30fb8adf8e25c11a9492b001e35a9426
 //NumPy reason failure
 _Python3_NumPy_REASON_FAILURE:INTERNAL=

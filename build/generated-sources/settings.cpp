@@ -1,7 +1,7 @@
 #include "settings.hpp"
 
 const char* const APP_NAME{"polybar"};
-const char* const APP_VERSION{"3.7.2-33-ga5dfcfb6-dev"};
+const char* const APP_VERSION{"3.7.2-35-ge657b2ca"};
 
 const int SINK_PRIORITY_BAR{1};
 const int SINK_PRIORITY_SCREEN{2};

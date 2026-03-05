@@ -56,7 +56,7 @@ if on_rtd:
     version = os.environ.get('READTHEDOCS_VERSION', None)
 else:
     # The short X.Y version
-    version = '3.7.2-33-ga5dfcfb6-dev'
+    version = '3.7.2-35-ge657b2ca'
 
 # The full version, including alpha/beta/rc tags
 release = version
