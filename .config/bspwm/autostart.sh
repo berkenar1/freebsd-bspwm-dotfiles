@@ -44,4 +44,16 @@ if command -v control_box >/dev/null 2>&1; then
         control_box -ewwopen
 fi
 
+# Launch polybar
+if command -v polybar >/dev/null 2>&1; then
+        _polybar_launch="${XDG_CONFIG_HOME:-$HOME/.config}/polybar/launch-freebsd.sh"
+        [ ! -x "$_polybar_launch" ] && _polybar_launch="${XDG_CONFIG_HOME:-$HOME/.config}/polybar/launch.sh"
+        if [ -x "$_polybar_launch" ]; then
+                "$_polybar_launch" &
+        else
+                killall -q polybar 2>/dev/null
+                polybar -c "${XDG_CONFIG_HOME:-$HOME/.config}/polybar/config.ini" main &
+        fi
+fi
+
 dunstify -i window_list "BSPWM" "Completed autostarting all apps"
