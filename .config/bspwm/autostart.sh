@@ -19,6 +19,7 @@ done
 
 # Exclusive apps
 if command -v stalonetray >/dev/null 2>&1 && [[ ! $(pidof stalonetray) ]]; then
+	stalonetray &
 	sleep 0.5
 	xdo hide -N stalonetray
 	touch "/tmp/syshide.lock"
