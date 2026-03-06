@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 STYLUS="$(xsetwacom --list devices | grep -w "STYLUS" | awk -F '  \t' '{print$1}')"
 SWITCH="false"

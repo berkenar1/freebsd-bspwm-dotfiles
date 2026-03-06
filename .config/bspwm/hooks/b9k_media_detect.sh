@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 while true; do
 	_vid_cam=$(lsof /dev/video0 | awk 'FNR == 4 {print}')

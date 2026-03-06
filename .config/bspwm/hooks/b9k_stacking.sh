@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 declare -a _role=("pop-up" "PictureInPicture")
 declare -a _DND=("is sharing your screen.")

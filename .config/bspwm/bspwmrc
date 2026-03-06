@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #     __
 #    / /_  _________ _      ______ ___
@@ -8,7 +8,7 @@
 #           /_/
 #
 
-_config="$XDG_CONFIG_HOME/bspwm"
+_config="${XDG_CONFIG_HOME:-$HOME/.config}/bspwm"
 
 # Restore wallpaper
 nitrogen --restore &
@@ -30,16 +30,17 @@ for i in "$_config"/rules/*.sh; do
 	}
 done
 
-# Kill if already running
-killall -9 ksuperkey
+# Enable Super Keys For Menu (skip if ksuperkey not installed)
+if command -v ksuperkey >/dev/null 2>&1; then
+	killall -9 ksuperkey 2>/dev/null || true
+	ksuperkey -e 'Super_L=Alt_L|F1' &
+	ksuperkey -e 'Super_R=Alt_L|F1' &
+fi
 
-# Enable Super Keys For Menu
-ksuperkey -e 'Super_L=Alt_L|F1' &
-ksuperkey -e 'Super_R=Alt_L|F1' &
-
-# Polkit agent
-if [[ ! $(pidof xfce-polkit) ]]; then
-	/usr/lib/xfce-polkit/xfce-polkit &
+# Polkit agent (skip if not installed)
+_polkit=$(command -v xfce-polkit || command -v lxpolkit || command -v /usr/lib/xfce-polkit/xfce-polkit 2>/dev/null || true)
+if [ -n "$_polkit" ] && ! pgrep -x "$(basename "$_polkit")" >/dev/null 2>&1; then
+	"$_polkit" &
 fi
 
 # Delete existing hooks and restart them

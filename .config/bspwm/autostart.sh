@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #                __             __             __
 #   ____ ___  __/ /_____  _____/ /_____ ______/ /_
@@ -7,18 +7,18 @@
 # \__,_/\__,_/\__/\____/____/\__/\__,_/_/   \__/
 #
 
-# Restart default apps
+# Restart default apps (skip any that are not installed)
 declare -a restart=(xfce4-power-manager picom sxhkd xbanish
-	copyq playerctld plank flameshot touchegg dunst)
+        copyq playerctld plank flameshot touchegg dunst)
 for i in "${restart[@]}"; do
-	pgrep -x "$i" | xargs kill
+        command -v "$i" >/dev/null 2>&1 || continue
+        pgrep -x "$i" | xargs kill 2>/dev/null || true
 	sleep 0.5
 	eval "$i" &
 done
 
 # Exclusive apps
-if [[ ! $(pidof stalonetray) ]]; then
-	stalonetray &
+if command -v stalonetray >/dev/null 2>&1 && [[ ! $(pidof stalonetray) ]]; then
 	sleep 0.5
 	xdo hide -N stalonetray
 	touch "/tmp/syshide.lock"
@@ -37,7 +37,11 @@ if [[ $(pgrep --exact keepassxc) ]]; then
 	_unlock_db &
 fi
 
-pgrep -x "eww" | xargs kill
-control_box -ewwopen
+if command -v eww >/dev/null 2>&1; then
+        pgrep -x "eww" | xargs kill 2>/dev/null || true
+fi
+if command -v control_box >/dev/null 2>&1; then
+        control_box -ewwopen
+fi
 
 dunstify -i window_list "BSPWM" "Completed autostarting all apps"
