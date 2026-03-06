@@ -19,12 +19,16 @@ xsetroot -cursor_name left_ptr &
 # Set configurations
 for i in "$_config"/configs/*.sh; do
 	{
-                bash "$i" &
+		bash "$i" &
+	}
+done
 
 # Set rules
 for i in "$_config"/rules/*.sh; do
 	{
-                bash "$i" &
+		bash "$i" &
+	}
+done
 
 # Kill if already running
 killall -9 ksuperkey

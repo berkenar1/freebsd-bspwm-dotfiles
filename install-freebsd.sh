@@ -558,7 +558,8 @@ install_dotfiles() {
 
     # Copy entire .config tree (preserve attributes, copy hidden files)
     if [ -d "$DOTFILES_DIR/.config" ]; then
-        # If all components are enabled, do a fast full copy
+        # If all components are enabled, do a fast full copy and skip the per-entry loop
+        _full_copy_done=false
         if [ "$INSTALL_WM" = true ] && [ "$INSTALL_NVIM" = true ] && [ "$INSTALL_ZSH" = true ] && [ "$INSTALL_AUDIO" = true ]; then
             log_info "Copying all files from $DOTFILES_DIR/.config to $XDG_CONFIG_HOME"
             if cp -Rp "$DOTFILES_DIR/.config/." "$XDG_CONFIG_HOME/" 2>/dev/null; then
@@ -568,12 +569,14 @@ install_dotfiles() {
                 set_executables "$XDG_CONFIG_HOME/polybar"
                 set_executables "$XDG_CONFIG_HOME/scripts"
                 set_executables "$XDG_CONFIG_HOME/sxhkd"
+                _full_copy_done=true
             else
                 log_warning "cp -Rp failed for some files; falling back to per-entry copy"
             fi
         fi
 
         # Per-entry copy (used if any component is disabled or full copy failed)
+        [ "$_full_copy_done" = true ] && { log_info "Skipping per-entry copy (full copy already done)"; } ||
         for entry in "$DOTFILES_DIR/.config"/* "$DOTFILES_DIR/.config"/.[!.]* "$DOTFILES_DIR/.config"/..?*; do
             [ -e "$entry" ] || continue
             entry_name=$(basename "$entry")

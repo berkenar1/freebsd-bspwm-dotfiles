@@ -57,15 +57,10 @@ sleep 1
 # If bspwm exited quickly or logged a configuration execution error, replace with a minimal test config and restart
 if ! kill -0 "$BSPWM_PID" 2>/dev/null || ( [ -f "$BSPWM_LOG" ] && grep -q "Couldn't execute the configuration file" "$BSPWM_LOG" 2>/dev/null ); then
     echo "bspwm failed to start or config execution failed - applying fallback minimal bspwmrc (logged in $LOGDIR)"
-    # Backup existing config
-    if [ -f "$HOME/.config/bspwm/bspwmrc" ]; then
-        mkdir -p "$LOGDIR/backup"
-        cp -p "$HOME/.config/bspwm/bspwmrc" "$LOGDIR/backup/bspwmrc.before-fallback" 2>/dev/null || true
-    fi
-
-    # Write a minimal bspwmrc that sets a background and spawns a simple X client so we see something on screen
-    mkdir -p "$HOME/.config/bspwm"
-    cat > "$HOME/.config/bspwm/bspwmrc" <<'BSPF'
+    # NOTE: We write the fallback to a temp file and use 'bspwm -c' so we never
+    # touch the user's real ~/.config/bspwm/bspwmrc.
+    FALLBACK_RC="$LOGDIR/bspwmrc-fallback"
+    cat > "$FALLBACK_RC" <<'BSPF'
 #!/bin/sh
 # Minimal test bspwmrc used by test-xephyr.sh fallback
 xsetroot -solid "#222222" &
@@ -82,14 +77,14 @@ else
 fi
 # Keep script short - bspwm runs independently
 BSPF
-    chmod +x "$HOME/.config/bspwm/bspwmrc"
+    chmod +x "$FALLBACK_RC"
 
-    # If previous bspwm process still exists, kill it, then restart
+    # If previous bspwm process still exists, kill it, then restart with temp config
     kill "$BSPWM_PID" 2>/dev/null || true
     sleep 0.4
-    DISPLAY="$SET_DISPLAY" sh -c 'exec bspwm' > "$BSPWM_LOG" 2>&1 &
+    DISPLAY="$SET_DISPLAY" bspwm -c "$FALLBACK_RC" > "$BSPWM_LOG" 2>&1 &
     BSPWM_PID=$!
-    echo "Restarted bspwm with minimal test config (PID $BSPWM_PID). Logs: $BSPWM_LOG"
+    echo "Restarted bspwm with fallback config (PID $BSPWM_PID). Logs: $BSPWM_LOG"
 
     # Wait a short while for windows to map, then check for any mapped clients
     sleep 1
